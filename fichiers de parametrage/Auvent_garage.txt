@@ -1,0 +1,116 @@
+
+les côtes sont en mm
+#*****************************MATERIELS*********************************
+#    Pièces nommées ATTENTION, X et Y sont les axes des pièces
+#POTEAU;SECTION_POTEAU_X;SECTION_POTEAU_Y;SOMMET_POTEAU_n;X_POTEAU_n;Y_POTEAU;Z_POTEAU_n;MAT=woodAuvent 
+#POUTRE;SECTION_POUTRE_Y;SECTION_POUTRE_Z;X_POUTRE_n;Y_POUTRE_n;Z_POUTRE_n;LONGUEUR_POUTRE_n;DIR_Y_POUTRE_n;DIR_Z_POUTRE_n;MAT=woodAuvent 
+#CHEVRON;nombre;section_x;section_y;dépassement,materiel     pose automatique sur les poutres extrêmes
+														#ATTENTION:il faut obligatoirement 2 poutres pour poser les chevrons
+#LITEAU;nombre;section_y;section_z;MAT=xxx
+														#ATTENTION:il faut obligatoirement 2 chevrons pour poser les liteaux
+#CLINS;x;y;z;largeur_x;hauteur_y;direction;orientation;pas;epaisseur;delta_hauteur;Id;MAT=xxx
+#PANNEAU;x1;y1;z1;x2;y2;z2;epaisseur;option;type;MAT=xxx   option: CHAPEAU   type 1:polycarbonate  type 2:panneau plein
+#RIVE;sectionX;sectionY;MAT=xxx
+#GOUTIERE;diametre;MAT=xxx
+#LAMBRIS;x;y;z;largeur_x;hauteur_y;direction;orientation;pas;epaisseur;delta_hauteur;Id;MAT=xxx
+#SOL;sectionX;sectionY;hauteur;x(axe);y(axe);z;MAT=xxx
+
+#          pièces génériques
+#XY;section_x;section_y;x1;y1;z1;x2;y2;z2;option;MAT=xxx
+#ANGLE_XZ;sectionX;sectionY;x;y;z;longueur;angle_deg;MAT=xxx
+#ANGLE_YZ;sectionX;sectionY;x;y;z;longueur;angle_deg;point_haut;MAT=xxx       #si x,y,z est le point haut :point_haut = 1
+
+#pour les panneau qui ne tangentent pas un chevron ou pour des cas particulier,
+#  id entre le cutter et id du panneau à traiter doivent correspondre
+#CUTTER;x1;y1;z1;x2;y2;z2;x3;y3;z3;x4;y4;z4;direction;Id(panneau à couper)  #4 point + 1 direction, supprime la partie vers direction;objet= clin,lambris...
+
+
+SECTION_POTEAU_X=140
+SECTION_POTEAU_Y=115
+X_POTEAU_1=SECTION_POTEAU_X/2				#angle exterieur du poteau Sud sur (0,0,0)
+X_POTEAU_2=X_POTEAU_1+2620+SECTION_POTEAU_X
+X_POTEAU_3=X_POTEAU_2+2820+SECTION_POTEAU_X
+Y_POTEAU=SECTION_POTEAU_Y/2
+Z_POTEAU_1=0
+Z_POTEAU_2=150
+Z_POTEAU_3=300
+SOMMET_POTEAU=2020-120   #inclus le support  120=sous poutre coté intérieur à sous chevron sur poteaux
+
+POTEAU;SECTION_POTEAU_X;SECTION_POTEAU_Y;SOMMET_POTEAU;X_POTEAU_1;Y_POTEAU;Z_POTEAU_1;MAT=woodAuvent   #poteaux Sud
+POTEAU;SECTION_POTEAU_X;SECTION_POTEAU_Y;SOMMET_POTEAU;X_POTEAU_2;Y_POTEAU;Z_POTEAU_2;MAT=woodAuvent 
+POTEAU;SECTION_POTEAU_X;SECTION_POTEAU_Y;SOMMET_POTEAU;X_POTEAU_3;Y_POTEAU;Z_POTEAU_3;MAT=woodAuvent   #poteaux Nord
+
+POTEAU;70;70;SOMMET_POTEAU+120;X_POTEAU_3-1030-70-35;Y_POTEAU-50;Z_POTEAU_3-55;MAT=woodAuvent   #poteau porte Est
+POTEAU;70;70;1880+35;X_POTEAU_1;1670;Z_POTEAU_1+120;MAT=woodAuvent   #poteau porte Sud-Est
+POTEAU;70;70;1880+35;X_POTEAU_1;2460;Z_POTEAU_1+120;MAT=woodAuvent   #poteau porte Sud-Ouest
+
+
+
+#différence de traitement par rapport aux autres auvents, les poutres sont dans la largeur et les chevrons dans la longueur
+#	les poutres  sont nommées XY
+#en conséquence: contraitement au autres,les chevrons ne seront pas posés automatiquement sur les poutres
+
+#*********************************POUTRES----->XY****************************************************
+#3 poutres posées sur les 3 poteaux
+#pour couper les extrémitées en biais, les poutres sont définies suivant leur profil
+#XY;section_x;section_y;x1;y1;z1;x2;y2;z2;option;MAT=xxx
+SECTION_POUTRE_X=80
+SECTION_POUTRE_Z=120
+X1_POUTRE_1=X_POTEAU_1  #+(SECTION_POTEAU_X-SECTION_POUTRE_X)/2
+Y1_POUTRE_1=-250
+Z1_POUTRE_1=SOMMET_POTEAU+SECTION_POUTRE_Z/2- 32                          #7.4°  32=250*tg(7.4)
+X2_POUTRE_1=X1_POUTRE_1
+Y2_POUTRE_1=3165+SECTION_POTEAU_Y
+Z2_POUTRE_1=Z1_POUTRE_1+420+32
+XY;SECTION_POUTRE_X;SECTION_POUTRE_Z;X1_POUTRE_1;Y1_POUTRE_1;Z1_POUTRE_1;X2_POUTRE_1;Y2_POUTRE_1;Z2_POUTRE_1;0;MAT=woodAuvent #poutre Sud
+
+X1_POUTRE_2=X_POTEAU_2  #+(SECTION_POTEAU_X-SECTION_POUTRE_X)/2
+X2_POUTRE_2=X1_POUTRE_2
+XY;SECTION_POUTRE_X;SECTION_POUTRE_Z;X1_POUTRE_2;Y1_POUTRE_1;Z1_POUTRE_1;X2_POUTRE_2;Y2_POUTRE_1;Z2_POUTRE_1;0;MAT=woodAuvent 
+
+X1_POUTRE_3=X_POTEAU_3  #+(SECTION_POTEAU_X-SECTION_POUTRE_X)/2
+X2_POUTRE_3=X1_POUTRE_3
+XY;SECTION_POUTRE_X;SECTION_POUTRE_Z;X1_POUTRE_3;Y1_POUTRE_1;Z1_POUTRE_1;X2_POUTRE_3;Y2_POUTRE_1;Z2_POUTRE_1;0;MAT=woodAuvent  #poutre Nord
+
+
+#********************************CHEVRONS---->LITEAUX
+#différence de traitement par rapport aux autres auvents, les poutres sont dans la largeur et les chevrons dans la longueur
+#	les poutres  sont nommées XY
+#	les chevrons seront nommés liteaux ---> voir si la couverture fonctionne ?
+#les liteaux se placent sur les chevrons, voir pour les mettre sur XY
+#LITEAU;nombre;section_y;section_z;MAT=xxx
+LITEAU;5;80;120;MAT=woodAuvent
+
+
+#RIVE;sectionX;sectionY;MAT=
+#RIVES;25; 200;MAT=woodAuvent
+
+#GOUTIERE;diametre;MAT=
+#GOUTIERE;100;MAT=goutiere
+
+#XY après les liteaux et la rive
+XY;70;70;X_POTEAU_1;2460-35;1880;X_POTEAU_1;1670+35;1880;0;MAT=woodAuvent #traverse porte Sud
+
+#CUTTER;x1;y1;z1;x2;y2;z2;x3;y3;z3;x4;y4;z4;direction;Id(panneau à couper)  #4 point + 1 direction, supprime la partie vers direction;objet= clin,lambris...
+#CLINS;x;y;z;largeur_x;hauteur_y;direction;orientation;pas;epaisseur;delta_hauteur;Id;MAT=woodAuvent
+CLINS;SECTION_POTEAU_X;50;120;2620;2020-120-120;yminus;horizontal;130;20;0;EST_SUD;MAT=lambris   #Est Sud champ(id) EST_SUD pour le CUTTER
+CUTTER;120;-20;125;2780;-20;250;2780;80;250;120;80;125;zminus;EST_SUD  #zmoins vers la partie a enlever
+
+CLINS;2900-0;50;Z_POTEAU_2+120;1755-35;2020-Z_POTEAU_2-120-120;yminus;horizontal;130;20;0;EST;MAT=lambris   #Est champ(id) EST pour le CUTTER
+CUTTER;2900-0;-20;270;4655-35;-20;365;4655-35;40;365;2900-0;40;270;zminus;EST  #zmoins vers la partie a enlever
+
+#CLINS;40;120;120;3288-SECTION_POTEAU_Y;2200;xminus;horizontal;130;20;0;"";MAT=lambris
+
+CLINS;40;120;120;1670-120-35;1880-85;xminus;horizontal;130;20;0;"";MAT=lambris   #Sud Est
+CLINS;40;2460+35;120;3288-2460-180+145;1880-85;xminus;horizontal;130;20;0;"";MAT=lambris   #Sud Ouest
+CLINS;40;120;1880+40;3288-180+60;1000;xminus;horizontal;130;20;0;"";MAT=lambris   #Sud partie haute
+
+LAMBRIS;X_POTEAU_1;1670+35;120;2460-35-(1670+35);1880-120-35;xplus;vertical;130;20;0;PORTE;MAT=lambris   #porte Sud 
+
+
+#porte OK 
+LAMBRIS;X_POTEAU_3-1030-60;0;Z_POTEAU_3+55;1010;1660-105-55;yminus;vertical;112;20;0;CHAPEAU;MAT=lambris   #porte Est 
+
+#pour test
+#PANNEAU;x1;y1;z1;x2;y2;z2;epaisseur;option;type;MAT=xxx  option CHAPEAU , type 1:polycarbonate  type 2:panneau plein
+#PANNEAU;4700;50;Z_POTEAU_3+55;4700+1010;50;Z_POTEAU_3+55+(1660-105-55);25;CHAPEAU;2;MAT=lambris   #porte Est 

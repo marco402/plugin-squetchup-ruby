@@ -1,0 +1,76 @@
+
+les côtes sont en mm
+#*****************************MATERIELS*********************************
+#    Pièces nommées ATTENTION, X et Y sont les axes des pièces
+#POTEAU;SECTION_POTEAU_X;SECTION_POTEAU_Y;SOMMET_POTEAU_n;X_POTEAU_n;Y_POTEAU;Z_POTEAU_n;MAT=woodAuvent 
+#POUTRE;SECTION_POUTRE_Y;SECTION_POUTRE_Z;X_POUTRE_n;Y_POUTRE_n;Z_POUTRE_n;LONGUEUR_POUTRE_n;DIR_Y_POUTRE_n;DIR_Z_POUTRE_n;MAT=woodAuvent 
+#CHEVRON;nombre;section_x;section_y;dépassement,materiel     pose automatique sur les poutres extrêmes
+														#ATTENTION:il faut obligatoirement 2 poutres pour poser les chevrons
+#LITEAU;nombre;section_y;section_z;MAT=xxx
+														#ATTENTION:il faut obligatoirement 2 chevrons pour poser les liteaux
+#CLINS;x;y;z;largeur_x;hauteur_y;direction;orientation;pas;epaisseur;delta_hauteur;Id;MAT=xxx
+#PANNEAU;x1;y1;z1;x2;y2;z2;epaisseur;option;type;MAT=xxx   option: CHAPEAU   type 1:polycarbonate  type 2:panneau plein
+#RIVE;sectionX;sectionY;MAT=xxx
+#GOUTIERE;diametre;MAT=xxx
+#LAMBRIS;x;y;z;largeur_x;hauteur_y;direction;orientation;pas;epaisseur;delta_hauteur;Id;MAT=xxx
+#SOL;sectionX;sectionY;hauteur;x(axe);y(axe);z;MAT=xxx
+
+#          pièces génériques
+#XY;section_x;section_y;x1;y1;z1;x2;y2;z2;option;MAT=xxx
+#ANGLE_XZ;sectionX;sectionY;x;y;z;longueur;angle_deg;MAT=xxx
+#ANGLE_YZ;sectionX;sectionY;x;y;z;longueur;angle_deg;point_haut;MAT=xxx       #si x,y,z est le point haut :point_haut = 1
+
+#pour les panneau qui ne tangentent pas un chevron ou pour des cas particulier,
+#  id entre le cutter et id du panneau à traiter doivent correspondre
+#CUTTER;x1;y1;z1;x2;y2;z2;x3;y3;z3;x4;y4;z4;direction;Id(panneau à couper)  #4 point + 1 direction, supprime la partie vers direction;objet= clin,lambris...
+
+#si woodAuvent n'existe pas , celui-ci est crée a partie de Wood Veneer 01
+
+
+# --- Poteaux ---
+#POTEAU;70;20;2400;0;3000        # Avant gauche
+
+#POTEAUX
+SECTION_POTEAUX = 70
+HAUTEUR_POTEAUX = 1940 
+POTEAU;SECTION_POTEAUX;SECTION_POTEAUX;HAUTEUR_POTEAUX;SECTION_POTEAUX/2;SECTION_POTEAUX/2;0;MAT=woodAuvent   #poteau Gauche base angle Nord Est à 0,0,0
+POTEAU;SECTION_POTEAUX;SECTION_POTEAUX;HAUTEUR_POTEAUX;SECTION_POTEAUX+1750+SECTION_POTEAUX/2;SECTION_POTEAUX/2;0;MAT=woodAuvent   #poteau Droit
+#POTEAU;SECTION_POTEAUX;SECTION_POTEAUX;HAUTEUR_POTEAUX;SECTION_POTEAUX+1750+SECTION_POTEAUX/2;SECTION_POTEAUX/2;MAT=woodAuvent   #poteau Droit
+
+#POUTRE
+#POUTRE;sectionY;sectionZ;x1;y1;z1;x2;longueur;y2;z2;MAT=xxx
+SECTION_POUTRE = 70
+DEPART_POUTRE = -320
+LONGUEUR_POUTRE = 3890  #le DEPART_POUTRE sera ajouté à cette longueur 
+LONGUEUR_POUTRE_REELLE = 3890-DEPART_POUTRE
+POUTRE;SECTION_POUTRE;SECTION_POUTRE;DEPART_POUTRE;SECTION_POUTRE/2;HAUTEUR_POTEAUX+SECTION_POUTRE/2;LONGUEUR_POUTRE;SECTION_POUTRE/2;HAUTEUR_POTEAUX+SECTION_POUTRE/2;MAT=woodAuvent   #poutre avant posée sur les 2 poteaux
+#liteau mettre même section verticale pour la pente
+POUTRE;30;SECTION_POUTRE;DEPART_POUTRE;SECTION_POUTRE/2+1320;HAUTEUR_POTEAUX+SECTION_POUTRE/2+436;LONGUEUR_POUTRE;SECTION_POUTRE/2+1320;HAUTEUR_POTEAUX+SECTION_POUTRE/2+436;MAT=woodAuvent 
+
+#CHEVRONS   a voir pente <0  ;  -1600 ?  hauteur poutre(inutil?)
+#le debord des chevrons de la poutre est en dur de 60mm
+#CHEVRON;nombre;section_x;section_y;dépassement,materiel
+SECTION_CHEVRON_X = 35
+SECTION_CHEVRON_Y = 70
+#LONGUEUR_CHEVRONS = 1320
+#HAUTEUR_CHEVRON = HAUTEUR_POTEAUX+SECTION_POUTRE-SECTION_CHEVRON_Y/2-10		# a voir -SECTION_CHEVRON_Y/2-10 Z de référence au niveau de la poutre
+#PENTE_TOIT =19.29  #151.0071  # 19.29/2   #-(45-19.29)  #-19.29
+#ESPACE_CHEVRONS = (LONGUEUR_POUTRE_REELLE-SECTION_CHEVRON_X)/6
+CHEVRON;7;SECTION_CHEVRON_X;SECTION_CHEVRON_Y;70;MAT=woodAuvent     #chevron gauche
+
+
+#LITEAUX
+	NOMBRE_LITEAUX = 3
+	SECTION_LITEAUX_X = 27
+	SECTION_LITEAUX_Y = 27
+LITEAU;NOMBRE_LITEAUX;SECTION_LITEAUX_X;SECTION_LITEAUX_Y;MAT=woodAuvent
+
+#LITEAU;LONGUEUR_POUTRE_REELLE;30;DEPART_POUTRE+LONGUEUR_POUTRE_REELLE/2;-1600;HAUTEUR_POTEAUX+SECTION_POUTRE+5;30;PENTE_TOIT;70;DEPART_POUTRE+LONGUEUR_POUTRE_REELLE/2;30;MAT=woodAuvent
+#LITEAU;LONGUEUR_POUTRE_REELLE;30;DEPART_POUTRE+LONGUEUR_POUTRE_REELLE/2;1217/2-1600;HAUTEUR_POTEAUX+SECTION_POUTRE+5+(2240-(HAUTEUR_POTEAUX+SECTION_POUTRE+5))/2;30;PENTE_TOIT;70;DEPART_POUTRE+LONGUEUR_POUTRE_REELLE/2;30;MAT=woodAuvent
+#LITEAU;LONGUEUR_POUTRE_REELLE;30;DEPART_POUTRE+LONGUEUR_POUTRE_REELLE/2;1217-1600+43;2298-58;30;PENTE_TOIT;70;DEPART_POUTRE+LONGUEUR_POUTRE_REELLE/2;30;MAT=woodAuvent
+
+#RIVE;sectionX;sectionY;MAT=
+RIVES;25; 200;MAT=woodAuvent
+
+#GOUTIERE;diametre;MAT=
+GOUTIERE;100;MAT=goutiere
