@@ -48,7 +48,7 @@ POTEAU;70;70;1880+35;X_POTEAU_1;2460;Z_POTEAU_1+120;MAT=woodAuvent   #poteau por
 
 #différence de traitement par rapport aux autres auvents, les poutres sont dans la largeur et les chevrons dans la longueur
 #	les poutres  sont nommées XY
-#en conséquence: contraitement au autres,les chevrons ne seront pas posés automatiquement sur les poutres
+#en conséquence: contraitement aux autres,les chevrons ne seront pas posés automatiquement sur les poutres
 
 #*********************************POUTRES----->XY****************************************************
 #3 poutres posées sur les 3 poteaux
@@ -76,17 +76,16 @@ XY;SECTION_POUTRE_X;SECTION_POUTRE_Z;X1_POUTRE_3;Y1_POUTRE_1;Z1_POUTRE_1;X2_POUT
 #********************************CHEVRONS---->LITEAUX
 #différence de traitement par rapport aux autres auvents, les poutres sont dans la largeur et les chevrons dans la longueur
 #	les poutres  sont nommées XY
-#	les chevrons seront nommés liteaux ---> voir si la couverture fonctionne ?
-#les liteaux se placent sur les chevrons, voir pour les mettre sur XY
+#	les chevrons seront nommés liteaux 
 #LITEAU;nombre;section_y;section_z;MAT=xxx
 LITEAU;5;80;120;MAT=woodAuvent
 
 
 #RIVE;sectionX;sectionY;MAT=
-#RIVES;25; 200;MAT=woodAuvent
+RIVES;25; 200;MAT=woodAuvent
 
 #GOUTIERE;diametre;MAT=
-#GOUTIERE;100;MAT=goutiere
+GOUTIERE;100;MAT=goutiere
 
 #XY après les liteaux et la rive
 XY;70;70;X_POTEAU_1;2460-35;1880;X_POTEAU_1;1670+35;1880;0;MAT=woodAuvent #traverse porte Sud
@@ -111,6 +110,3 @@ LAMBRIS;X_POTEAU_1;1670+35;120;2460-35-(1670+35);1880-120-35;xplus;vertical;130;
 #porte OK 
 LAMBRIS;X_POTEAU_3-1030-60;0;Z_POTEAU_3+55;1010;1660-105-55;yminus;vertical;112;20;0;CHAPEAU;MAT=lambris   #porte Est 
 
-#pour test
-#PANNEAU;x1;y1;z1;x2;y2;z2;epaisseur;option;type;MAT=xxx  option CHAPEAU , type 1:polycarbonate  type 2:panneau plein
-#PANNEAU;4700;50;Z_POTEAU_3+55;4700+1010;50;Z_POTEAU_3+55+(1660-105-55);25;CHAPEAU;2;MAT=lambris   #porte Est 

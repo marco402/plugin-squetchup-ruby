@@ -1,3 +1,15 @@
+# Written by Marc Prieur (marco40_github@sfr.fr)
+#                                    utils_auvent.rb 
+#                               project plugin-squetchup-ruby
+#                                 Plugin for Squetchup
+# **************************************************************************************
+# Creative Commons Attrib Share-Alike License
+# You are free to use/extend this library but please abide with the CC-BY-SA license:
+# Attribution-NonCommercial-ShareAlike 4.0 International License
+# http://creativecommons.org/licenses/by-nc-sa/4.0/
+
+# All text above must be included in any redistribution.
+#  **********************************************************************************
 
 module Auvent
 	module UtilsAuvent

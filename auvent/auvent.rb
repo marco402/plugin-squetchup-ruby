@@ -1,4 +1,15 @@
+# Written by Marc Prieur (marco40_github@sfr.fr)
+#                                    auvent.rb 
+#                               project plugin-squetchup-ruby
+#                                 Plugin for Squetchup
+# **************************************************************************************
+# Creative Commons Attrib Share-Alike License
+# You are free to use/extend this library but please abide with the CC-BY-SA license:
+# Attribution-NonCommercial-ShareAlike 4.0 International License
+# http://creativecommons.org/licenses/by-nc-sa/4.0/
 
+# All text above must be included in any redistribution.
+#  **********************************************************************************
 #Déposer ce fichier dans :
 #C:\Users\...\AppData\Roaming\SketchUp\SketchUp xxx\SketchUp\Plugins\
 #Relancer SketchUp
@@ -2081,6 +2092,9 @@ module Auvent
 				z = center.z - radius_int * Math.sin(angle)
 				pts_int << Geom::Point3d.new(center.x, y, z)  #-30.mm
 			end
+			if(last_component_name=="AUVENT_GARAGE")
+				delete_rive(ents)				#La goutière est fixée sur le fibrociment.
+			end
 			longueur = edges_sorted[0].length
 			contour = pts_ext + pts_int
 			contour << pts_ext.first   # fermeture du profil
@@ -2229,7 +2243,7 @@ module Auvent
 			if(last_component_name=="AUVENT_GARAGE")
 				longueur += 2 * (280.mm+150.mm)-80.mm      #debord chevrons(liteaux dans ce cas)+debord couverture
 				tr_offset = Geom::Transformation.translation(
-					Geom::Vector3d.new(-280.mm-80.mm-150.mm, -sx, sy + haut_chevron )    #
+					Geom::Vector3d.new(-280.mm-80.mm-150.mm, -sx, sy + haut_chevron )
 				)
 			else
 				tr_offset = Geom::Transformation.translation(
@@ -3008,6 +3022,11 @@ module Auvent
 		def self.delete_liteaux(gents)
 			liteaux = gents.grep(Sketchup::Group).select { |g| g.name == "LITEAU" }
 			liteaux.each(&:erase!)
+		end
+
+		def self.delete_rive(gents)
+			rive = gents.grep(Sketchup::Group).select { |g| g.name == "RIVE_BASSE" }
+			rive.each(&:erase!)
 		end
 
 		def self.section_chevron(chevron_group)
