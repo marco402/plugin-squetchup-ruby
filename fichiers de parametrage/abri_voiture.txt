@@ -1,5 +1,5 @@
 
-les côtes sont en mm
+#les côtes sont en mm
 #*****************************MATERIELS*********************************
 #    Pièces nommées ATTENTION, X et Y sont les axes des pièces
 #POTEAU;SECTION_POTEAU_X;SECTION_POTEAU_Y;SOMMET_POTEAU_n;X_POTEAU_n;Y_POTEAU;Z_POTEAU_n;MAT=woodAuvent 
