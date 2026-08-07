@@ -1,0 +1,17 @@
+#à coller dans la console ruby
+#-tracer le profil à coté une face latérale dans l'alignement souhaité
+#-sélectionner une arête parallèle au chemin que le profil doit suivre
+#dessine un cube pour les tests
+  model = Sketchup.active_model
+  ents  = model.active_entities
+  model.start_operation("Dessiner un Cube", true)
+# Définir les points de la base carrée (ici 200.mm de côté)
+  p1 = Geom::Point3d.new(0, 0, 0)
+  p2 = Geom::Point3d.new(200.mm, 0, 0)
+  p3 = Geom::Point3d.new(200.mm, 200.mm, 0)
+  p4 = Geom::Point3d.new(0, 200.mm, 0)
+# Dessiner la face carrée
+  face = ents.add_face(p1, p2, p3, p4)
+# Extruder la face pour faire un cube d'une hauteur de 200.mm 
+  face.pushpull(-200.mm)
+  model.commit_operation

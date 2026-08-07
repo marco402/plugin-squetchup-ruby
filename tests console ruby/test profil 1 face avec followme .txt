@@ -1,0 +1,35 @@
+#-1-collez dessine un cube.txt
+#trace bien le profil, problème si les façes opposées ne sont pas parallèles
+#-tracer le profil à coté une face latérale dans l'alignement souhaité
+#-sélectionner une arête parallèle au chemin que le profil doit suivre(sur y pour cet exemple)
+#-2-
+# profil en V Sélectionnez 1 bord parallèle au profil, executez une fois pour le situer
+#
+  model = Sketchup.active_model
+  model.start_operation("profil sur une face", true)	
+  ents  = model.active_entities
+  # 1. Définition du profil en V (triangle) 
+    #Attention le profil ne doit pas être sur la face sinon pb de supression du profil
+#profil intérieur
+      p1 = Geom::Point3d.new(10.mm, -10.mm, 0.mm)
+      p2 = Geom::Point3d.new(50.mm, -10.mm, 50.mm)
+      p3 = Geom::Point3d.new(90.mm, -10.mm, 0.mm)
+      profil_int = ents.add_face(p1, p2, p3)
+    profil_int.edges.each { |e| puts "avant #{e}, faces: #{e.faces.size.to_mm}" }
+    edge = model.selection.grep(Sketchup::Edge).first
+    profil_int.followme(edge)
+    if profil_int.valid?
+      profil_int.erase!
+    end
+
+#profil extérieur
+      p4 = Geom::Point3d.new(10.mm, -10.mm, 200.mm)
+      p5 = Geom::Point3d.new(50.mm, -10.mm, 250.mm)
+      p6 = Geom::Point3d.new(90.mm, -10.mm, 200.mm)
+      profil_ext = ents.add_face(p4, p5, p6)
+    edge = model.selection.grep(Sketchup::Edge).first
+    profil_ext.followme(edge)
+    if profil_ext.valid?
+      profil_ext.erase!
+    end
+  model.commit_operation

@@ -64,7 +64,7 @@ module Auvent
       tr = inst ? inst.transformation.clone : nil
       #puts "inst existante ? #{!inst.nil?} / tr=#{tr.inspect}"
       clear_definition(auvent_def)
-      puts "def nettoyée (entities: #{auvent_def.entities.length})"
+      #puts "def nettoyée (entities: #{auvent_def.entities.length})"
       FctAuvent.materials.merge!(load_all_materials_from("materialsAuvent"))
       generer_ossature(auvent_def.entities, path)
       if tr
@@ -128,14 +128,6 @@ module Auvent
         piece_panneau(root, p)
       when "XY"
         g=piece_xy(root, p)
-        case p[9]
-        when 1
-          face_ext = g.entities.grep(Sketchup::Face).find { |f|
-          f.normal.samedirection?(Geom::Vector3d.new(0,0,1))
-        }
-        chanfrein_rect_horizontal_su2017( face_ext, 10.mm, 10.mm)
-        end
-        g.material=p[-1]
       when "RENFORT_45"
         piece_renfort_45(root, p)
       when "CUTTER"
@@ -1313,11 +1305,14 @@ module Auvent
       id_str = id.to_s
       clins_group = trouver_panneau_par_id_recursif(id_str,gents)  #marchait
       lames = clins_group.entities.grep(Sketchup::Group)
+      model = Sketchup.active_model
+      model.start_operation("Cutter", true)
       lames.each do |lame|
         coupe_lambris_sur_points(lame,pts,normal: normal)
-        model = Sketchup.active_model
-        model.commit_operation
+        #model = Sketchup.active_model
+        #model.commit_operation
       end
+      model.commit_operation
     end
 
     def self.extrude_panneau_polycarbonate(root, pts, profil, pas, material_name,nom_group)
@@ -1357,6 +1352,68 @@ module Auvent
       largeur_panneau = p1.distance(p2)
       longueur_panneau = p1.distance(p4)
       nb_panneaux = 1    #(largeur_panneau / (pas+delta_x_entre_tuiles)).ceil
+      largeur_totale_f = largeur_panneau.to_f
+      largeur_restante = largeur_totale_f - (pas_f.to_f * (nb_panneaux - 1))
+      edge_gauche = gents.add_line(p1, p4)
+      nb_panneaux.times do |i|
+        offset_x = x_axis.clone
+        pts = profil_global.map { |p| p + offset_x }
+        precision = 3 # nombre de décimales
+        face = cov_ents.add_face(pts)
+        next unless face
+        face.reverse! if face.normal.dot(z_axis) < 0
+        normal = face.normal
+        if normal.angle_between(Y_AXIS) > 90.degrees
+          face.reverse!
+        end
+        face.pushpull(longueur_panneau)
+      end   # end of nb_panneaux.times do |i|
+      edge_gauche.erase! if edge_gauche.valid?
+      cov_ents.grep(Sketchup::Edge).each { |e|
+        e.soft = true
+        e.smooth = true
+      }
+      mat = @materials[material_name]
+      UtilsAuvent.apply_material_stable(cov_ents, mat)
+    end
+
+    def self.extrude_panneau_plein(root, pts, profil, epaisseur, material_name,nom_group)
+      #  Créer un groupe pour la couverture
+      gents=root.entities
+      g = root.entities.add_group
+      g.name = nom_group
+      g.layer = root.layer
+      # Récupérer les entities du groupe
+      cov_ents = g.entities
+      # --- Points du toit ---
+      p1, p2, p3, p4 = pts
+      x_axis = p1.vector_to(p2)
+      x_axis.normalize!
+      # --- Axe Z : normale du toit (p1,p2,p4) ---
+      z_axis = p1.vector_to(p2) * p1.vector_to(p4)
+      z_axis.normalize!
+      # --- Axe Y : perpendiculaire à X et Z ---
+      y_axis = z_axis * x_axis
+      y_axis.normalize!
+      # --- Transformation du profil dans le repère du toit ---
+      profil_global = profil.map do |pt|
+        # IMPORTANT : conversion en Float ici aussi (SU2017 renvoie toujours Length)
+        x = pt.x.to_f          #undefined method `to_f' for Point3d(0.00393701, 0, 0):Geom::Point3d>
+        y = pt.y.to_f
+        z = pt.z.to_f
+        vx = x_axis.x * x + y_axis.x * y + z_axis.x * z    #Geom::Point3d can't be coerced into Float>
+        vy = x_axis.y * x + y_axis.y * y + z_axis.y * z
+        vz = x_axis.z * x + y_axis.z * y + z_axis.z * z
+        Geom::Point3d.new(
+          p1.x + vx,
+          p1.y + vy,
+          p1.z + vz
+        )
+      end  #profil.map do |pt|
+      pas_f = epaisseur.to_f
+      largeur_panneau = p1.distance(p2)
+      longueur_panneau = p1.distance(p4)
+      nb_panneaux = 1    #(largeur_panneau / (epaisseur+delta_x_entre_tuiles)).ceil
       largeur_totale_f = largeur_panneau.to_f
       largeur_restante = largeur_totale_f - (pas_f.to_f * (nb_panneaux - 1))
       edge_gauche = gents.add_line(p1, p4)
@@ -1478,14 +1535,17 @@ module Auvent
     
     def self.coupe_panneau_auto(lambris_group, chevrons,mat,cas=0)
       lames = lambris_group.entities.grep(Sketchup::Group)
+      model = Sketchup.active_model
+      model.start_operation("Cutter", true)
       lames.each do |lame|
         ch = chevron_pour_lame(lame, chevrons)
         next unless ch
         coupe_lambris_sur_chevron(lame, ch,cas)
-        model = Sketchup.active_model
-        model.commit_operation
+        #model = Sketchup.active_model
+        #model.commit_operation
         reappliquer_materiau(lame,mat)
       end
+      model.commit_operation
     end
 
     def self.trouver_panneau_par_id_recursif(id, ents)
@@ -1530,7 +1590,7 @@ module Auvent
       pts = [
         Geom::Point3d.new(-sx/2, -sy/2, 0),
         Geom::Point3d.new( sx/2, -sy/2, 0),
-          Geom::Point3d.new( sx/2,  sy/2, 0),
+        Geom::Point3d.new( sx/2,  sy/2, 0),
         Geom::Point3d.new(-sx/2,  sy/2, 0)
       ].map { |p| p.transform(tr) }
       face = ents.add_face(pts)
@@ -1593,6 +1653,30 @@ module Auvent
         Geom::Point3d.new(x2, y2, z2)
       )
       extrude_piece(edge, sx, sy, mat)
+	  
+      #traitement des options
+      option_str=p[9].to_s
+      face_ext = nil
+      if(option_str=="1" || option_str=="2" || option_str=="3")
+         face_ext = g.entities.grep(Sketchup::Face).find { |f|
+            f.normal.samedirection?(Geom::Vector3d.new(0,0,1)) #cherche une façe normale à z
+         }
+      end
+      case option_str
+        when "1"
+          #chanfrein à 45° de 10*10mm
+          chanfrein_rect_horizontal_su2017( face_ext, 10.mm, 10.mm)
+        when "2"
+          #moulure en V sur les 4 Faces à 30mm de l'extrémitée,10mm de profondeur,flanc à 45°
+          moulure_en_v_4_faces( face_ext, 30.mm, 10.mm)  
+        when "3"
+          #la moulure avant le chanfrein
+          #moulure en V sur les 4 Faces à 30mm de l'extrémitée,10mm de profondeur,flanc à 45°
+          moulure_en_v_4_faces( face_ext, 30.mm, 10.mm)
+          #chanfrein à 45° de 10*10mm
+          chanfrein_rect_horizontal_su2017( face_ext, 10.mm, 10.mm)
+      end
+      g.material=p[-1]  #colore les coupes
       return g
     end
     
@@ -1698,8 +1782,11 @@ module Auvent
         p[5].to_f,
         p[6].to_f
       )
-      # Position du panneau
-      if (p[1]==p[4])   #x identiques
+	  #il faut générer les 2 points manquants
+      # Position du panneau vertical sur x ou vertical sur y ou horizontal
+	  #il faudra soit ajouter 1 ou 2 angles pour panneaus en biais soit ajouter 2 points
+	  #les points sont numérotés de 0 à 3 sens trigo
+      if (p[1]==p[4])   #x identiques panneau sur y, 
         new_pts[1] = Geom::Point3d.new(
           p[1].to_f,
           p[2].to_f,
@@ -1710,29 +1797,118 @@ module Auvent
           p[5].to_f,
           p[3].to_f
         )
-      elsif (p[2]==p[5])  #y identiques
-        new_pts[1] = Geom::Point3d.new(
+      elsif (p[2]==p[5])  #y identiques panneau sur x
+        new_pts[3] = Geom::Point3d.new(
           p[1].to_f,
           p[5].to_f,
           p[6].to_f
         )
-        new_pts[3] = Geom::Point3d.new(
+        new_pts[1] = Geom::Point3d.new(
           p[4].to_f,
           p[5].to_f,
+          p[3].to_f
+        )
+      elsif (p[3]==p[6])  #z identique panneau horizontal
+        new_pts[3] = Geom::Point3d.new(
+          p[1].to_f,
+          p[5].to_f,
+          p[6].to_f
+        )
+        new_pts[1] = Geom::Point3d.new(
+          p[4].to_f,
+          p[2].to_f,
           p[3].to_f
         )
       else
         puts ("panneaux traités vertical ou horizontal à compléter si nécessaire")
       end
       material_name=p[-1]
+      name=p[0]
       thickness_i=p[7]
+      option_str=p[8].to_s
+      type_str=p[9].to_s
       v = new_pts[1] - new_pts[0]
-      largeur = v.length
+      l = new_pts[3] - new_pts[0]
+      rayon=p[10]
+      largeur = v.length - 2 * rayon
+      longueur= l.length - 2 * rayon
       model = Sketchup.active_model
-      profil  = profil_polycarbonate_15mm_epais(thickness_i,largeur)
-      extrude_panneau_polycarbonate(root, new_pts, profil, largeur, material_name,p[0])
+      if (type_str == "1")           #polycarbonate 
+        profil  = profil_polycarbonate_15mm_epais(thickness_i,largeur)
+        extrude_panneau_polycarbonate(root, new_pts, profil, largeur, material_name,name)
+      elsif (type_str == "2")        #panneau plein
+        if(option_str == "1")   #angles arrondis de rayon  #voir profil de dessus avec les arrondis
+          grp=profil_rectangulaire_extrude_dans_epaisseur(root,longueur,largeur,rayon,thickness_i,p[0])
+          # Seuil en degrés : en dessous, on lisse
+          #ANGLE_SEUIL = 30.degrees
+		  model.start_operation("edge smooth", true)
+          grp.entities.grep(Sketchup::Edge) do |edge|
+            faces = edge.faces
+            # On ne lisse que les arêtes entre deux faces
+            next unless faces.length == 2
+            # Normales des deux faces
+            n1 = faces[0].normal
+            n2 = faces[1].normal
+            # Angle entre les normales
+            angle = n1.angle_between(n2)
+            # Si l’angle est doux, on lisse
+            if angle < 30.degrees
+              edge.soft   = true
+              edge.smooth = true
+            end
+          end
+          model.commit_operation
+          grp.transform!(Geom::Transformation.translation([p[1]+l.length/2, p[2]+v.length/2, p[3]]))
+          mat = @materials[material_name]
+          UtilsAuvent.apply_material_stable(grp.entities,mat)
+        else
+           profil  = profil_polycarbonate_15mm_epais(thickness_i,largeur)            #ca marche mais a revoir sans polycarbonate
+           extrude_panneau_polycarbonate(root, new_pts, profil, largeur, material_name,p[0])
+        end
+        #else
+        #UI.messagebox("type #{type} non prévu pour PANNEAU")
+      end
     end
 
+    def self.profil_rectangulaire_extrude_dans_epaisseur(root,longueur, largeur, rayon,epaisseur,name)
+      #model = Sketchup.active_model
+      #ents  = model.active_entities
+      ents=root.entities
+      # Groupe pour le profil
+      grp = ents.add_group
+      gents = grp.entities
+      grp.name=name
+      # Demi-dimensions
+      lx = longueur.to_f / 2.0
+      ly = largeur.to_f / 2.0
+      #r  = rayon.to_f
+      # Sécurité : rayon trop grand
+      r = [rayon.to_f, lx, ly].min
+      # Points des 4 centres d’arc
+      c1 = Geom::Point3d.new( lx - r,  ly - r, 0)
+      c2 = Geom::Point3d.new(-lx + r,  ly - r, 0)
+      c3 = Geom::Point3d.new(-lx + r, -ly + r, 0)
+      c4 = Geom::Point3d.new( lx - r, -ly + r, 0)
+      # Construction du contour
+      contour  = []
+      # Arc 1 (haut‑droite)          sens trigo départ sur x     normal à z
+      contour += gents.add_arc(c1, Geom::Vector3d.new(1,0,0),  Geom::Vector3d.new(0,0,1), r, 0, 90.degrees, 8).map { |e| e.end.position }
+      # Arc 2 (haut‑gauche)          sens trigo départ sur y     normal à z
+        contour += gents.add_arc(c2, Geom::Vector3d.new(0,1,0),  Geom::Vector3d.new(0,0,1), r, 0, 90.degrees, 8).map { |e| e.end.position }
+      # Arc 3 (bas‑gauche)          sens trigo départ sur -x     normal à z
+      contour += gents.add_arc(c3, Geom::Vector3d.new(-1,0,0), Geom::Vector3d.new(0,0,1), r, 0, 90.degrees, 8).map { |e| e.end.position }
+      # Arc 4 (bas‑droite)          sens trigo départ sur -y     normal à z
+      contour += gents.add_arc(c4, Geom::Vector3d.new(0,-1,0), Geom::Vector3d.new(0,0,1), r, 0, 90.degrees, 8).map { |e| e.end.position }
+      # On force Z = 0 (SU2017 bug arcs)
+      contour.map! { |p| Geom::Point3d.new(p.x, p.y, 0) }
+
+      # Face
+      face = gents.add_face(contour)
+      face.pushpull(rayon)
+
+  grp
+    end
+	
     def self.piece_panneau_lambris(root, p)
       largeur=p[4]
       normal_sym      = p[6]
@@ -1785,7 +1961,7 @@ module Auvent
       pts = []
       pts[0] = Geom::Point3d.new(
         p[1].to_f,
-      p[2].to_f,
+        p[2].to_f,
         p[3].to_f
       )
       pts[1] = Geom::Point3d.new(
@@ -2676,7 +2852,7 @@ module Auvent
           delta_hauteur = UtilsAuvent.eval_expr(parts[10], vars).mm
           id = parts[11].to_s.strip.downcase.to_sym
           pieces << [type, x, y, z, largeur, hauteur, direction, orientation, pas, epaisseur,delta_hauteur,id , material]
-        next   #next line ?
+        next
         when "CUTTER"
            #CUTTER;x1;y1;z1;x2;y2;z2;x3;y3;z3;x4;y4;z4;direction;objet
            #4 point + 1 direction, supprime la partie vers direction;objet= clin,lambris...
@@ -2692,10 +2868,41 @@ module Auvent
           x4         = UtilsAuvent.eval_expr(parts[10], vars).mm
           y4         = UtilsAuvent.eval_expr(parts[11], vars).mm
           z4         = UtilsAuvent.eval_expr(parts[12], vars).mm
-          direction   = parts[13].to_s.strip.downcase.to_sym
+          direction  = parts[13].to_s.strip.downcase.to_sym
           id   = parts[14].to_s.strip.downcase.to_sym
           pieces << [type, x1, y1, z1, x2, y2, z2, x3, y3, z3, x4, y4, z4, direction,id]
-        next   #next line ?
+        next
+        when "PANNEAU"
+           #PANNEAU;x1;y1;z1;x2;y2;z2;epaisseur;option;type;rayon;MAT=xxx   option:1 angles arrondis de rayon  type 1:polycarbonate  type 2:panneau plein
+          x1         = UtilsAuvent.eval_expr(parts[1], vars).mm
+          y1         = UtilsAuvent.eval_expr(parts[2], vars).mm
+          z1         = UtilsAuvent.eval_expr(parts[3], vars).mm
+          x2         = UtilsAuvent.eval_expr(parts[4], vars).mm
+          y2         = UtilsAuvent.eval_expr(parts[5], vars).mm
+          z2         = UtilsAuvent.eval_expr(parts[6], vars).mm
+          epaisseur  = UtilsAuvent.eval_expr(parts[7], vars).mm
+          option     = parts[8].to_s.strip.downcase.to_sym
+          le_type       = parts[9].to_s.strip.downcase.to_sym
+          if (parts[10] != nil)   #pour versions précédentes sans rayon
+            rayon      = UtilsAuvent.eval_expr(parts[10], vars).mm
+            pieces << [type, x1, y1, z1, x2, y2, z2, epaisseur, option, le_type, rayon, material]
+          else
+            pieces << [type, x1, y1, z1, x2, y2, z2, epaisseur, option, le_type, 0,material]
+          end
+        next
+        when "XY"
+           #XY;section_x;section_y;x1;y1;z1;x2;y2;z2;option;MAT=xxx         option 3 chanfrein + moulure en V
+          sx         = UtilsAuvent.eval_expr(parts[1], vars).mm   
+          sy         = UtilsAuvent.eval_expr(parts[2], vars).mm   		  
+          x1         = UtilsAuvent.eval_expr(parts[3], vars).mm
+          y1         = UtilsAuvent.eval_expr(parts[4], vars).mm
+          z1         = UtilsAuvent.eval_expr(parts[5], vars).mm
+          x2         = UtilsAuvent.eval_expr(parts[6], vars).mm
+          y2         = UtilsAuvent.eval_expr(parts[7], vars).mm
+          z2         = UtilsAuvent.eval_expr(parts[8], vars).mm
+          option     = parts[9].to_s.strip.downcase.to_sym
+          pieces << [type, sx, sy, x1, y1, z1, x2, y2, z2, option, material]
+        next
       end
       values = parts[1..-1].map { |p| UtilsAuvent.eval_expr(p, vars) }
       case type
@@ -2973,6 +3180,26 @@ module Auvent
       e4.find_faces
     end
 
+    def self.moulure_en_v_4_faces(face, retrait, profondeur)
+      ents = face.parent.entities
+      pts  = face.outer_loop.vertices.map(&:position)
+      xs = pts.map(&:x)
+      ys = pts.map(&:y)
+      z  = pts.first.z
+      xmin= xs.min
+      ymin = ys.min
+      # points extérieurs (ordre horaire)
+      p1 = Geom::Point3d.new(xmin, ymin, z + retrait)
+      p2 = Geom::Point3d.new(xmin + profondeur, ymin, z + retrait + profondeur) #pente à 45degrés
+      p3 = Geom::Point3d.new(xmin, ymin, z + retrait + 2 * profondeur)
+      profil = ents.add_face(p1, p2, p3)
+      edges = face.outer_loop.edges
+      profil.followme(edges)
+      #if profil.valid?
+        #profil.erase!   #inutile dans ce cas
+      #end
+    end
+	
     def self.creer_chevron(parent,distance_horizontal,hauteur,epaisseur,pente_rad,debord,posx,posz)
       #pos_z dessus de la poutre du bas
       g = parent.entities.add_group

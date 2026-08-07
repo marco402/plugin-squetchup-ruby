@@ -1,0 +1,32 @@
+#-1-collez dessine un cube.txt
+#trace bien le profil, problème si les façes opposées ne sont pas parallèles
+#-tracer le profil sur une face latérale (pas de problème de supression contrairement à une façe) dans l'alignement souhaité
+#-sélectionner une face qui à ses 4 arêtes qui définissent le chemin que le profil doit suivre(façe du dessus dans cet exemple)
+#-2-
+#-tracer le profil sur une face latérale 
+
+model.start_operation("profil sur 4 faces", true)	
+  model = Sketchup.active_model
+  ents  = model.active_entities
+
+  # Face du panneau (sélectionnée)
+  face = model.selection.grep(Sketchup::Face).first
+  #return unless face
+
+  # Profil en V
+  #dans ce cas,le profil peut être sur la face pas de pb de supression du profil
+  p1 = Geom::Point3d.new(0.mm, 0.mm, 100.mm)
+  p2 = Geom::Point3d.new(90.mm, 0, 150.mm)
+  p3 = Geom::Point3d.new(0.mm, 0, 200.mm)
+  profil = ents.add_face(p1, p2, p3)
+
+  # Chemin = contour extérieur du panneau
+  edges = face.outer_loop.edges
+
+  # FollowMe
+  profil.followme(edges)
+  if profil.valid?
+    profil.erase!   #inutile dans ce cas
+  end
+
+model.commit_operation

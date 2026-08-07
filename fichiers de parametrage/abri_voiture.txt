@@ -1,34 +1,7 @@
 
-#les côtes sont en mm
-#*****************************MATERIELS*********************************
-#    Pièces nommées ATTENTION, X et Y sont les axes des pièces
-#POTEAU;SECTION_POTEAU_X;SECTION_POTEAU_Y;SOMMET_POTEAU_n;X_POTEAU_n;Y_POTEAU;Z_POTEAU_n;MAT=woodAuvent 
-#POUTRE;SECTION_POUTRE_Y;SECTION_POUTRE_Z;X_POUTRE_n;Y_POUTRE_n;Z_POUTRE_n;LONGUEUR_POUTRE_n;DIR_Y_POUTRE_n;DIR_Z_POUTRE_n;MAT=woodAuvent 
-#CHEVRON;nombre;section_x;section_y;dépassement,materiel     pose automatique sur les poutres extrêmes
-														#ATTENTION:il faut obligatoirement 2 poutres pour poser les chevrons
-#LITEAU;nombre;section_y;section_z;MAT=xxx
-														#ATTENTION:il faut obligatoirement 2 chevrons pour poser les liteaux
-#CLINS;x;y;z;largeur_x;hauteur_y;direction;orientation;pas;epaisseur;delta_hauteur;Id;MAT=xxx
-#PANNEAU;x1;y1;z1;x2;y2;z2;epaisseur;option;type;MAT=xxx   option: CHAPEAU   type 1:polycarbonate  type 2:panneau plein
-#RIVE;sectionX;sectionY;MAT=xxx
-#GOUTIERE;diametre;MAT=xxx
-#LAMBRIS;x;y;z;largeur_x;hauteur_y;direction;orientation;pas;epaisseur;delta_hauteur;Id;MAT=xxx
-#SOL;sectionX;sectionY;hauteur;x(axe);y(axe);z;MAT=xxx
-
-#          pièces génériques
-#XY;section_x;section_y;x1;y1;z1;x2;y2;z2;option;MAT=xxx
-#ANGLE_XZ;sectionX;sectionY;x;y;z;longueur;angle_deg;MAT=xxx
-#ANGLE_YZ;sectionX;sectionY;x;y;z;longueur;angle_deg;point_haut;MAT=xxx       #si x,y,z est le point haut :point_haut = 1
-
-#pour les panneau qui ne tangentent pas un chevron ou pour des cas particulier,
-#  id entre le cutter et id du panneau à traiter doivent correspondre
-#CUTTER;x1;y1;z1;x2;y2;z2;x3;y3;z3;x4;y4;z4;direction;Id(panneau à couper)  #4 point + 1 direction, supprime la partie vers direction;objet= clin,lambris...
-
 #POTEAUX;sectionX;sectionY;hauteur;x;y;z;MAT
 SECTION_POTEAUXY = 180
 HAUTEUR_POTEAUX = 2870 
-#HAUTEUR_POTEAUX_ASSEMBLAGE=HAUTEUR_POTEAUX+150
-#POTEAU;
 POTEAU;SECTION_POTEAUXY;SECTION_POTEAUXY;HAUTEUR_POTEAUX;SECTION_POTEAUXY/2;SECTION_POTEAUXY/2;0;MAT=woodAuvent   #poteau Gauche base angle Nord  à 0,0,0
 POTEAU;SECTION_POTEAUXY;SECTION_POTEAUXY;HAUTEUR_POTEAUX;SECTION_POTEAUXY/2+2530;SECTION_POTEAUXY/2;0;MAT=woodAuvent   #poteau Gauche base angle Nord Est à 0,0,0
 POTEAU;SECTION_POTEAUXY;SECTION_POTEAUXY;HAUTEUR_POTEAUX;SECTION_POTEAUXY/2+5050;SECTION_POTEAUXY/2;0;MAT=woodAuvent   #poteau Gauche base angle Nord Est à 0,0,0
