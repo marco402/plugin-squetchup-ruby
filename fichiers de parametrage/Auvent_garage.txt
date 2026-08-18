@@ -62,7 +62,7 @@ RIVES;25; 200;MAT=woodAuvent
 GOUTIERE;100;MAT=goutiere
 
 #XY après les liteaux et la rive
-XY;70;70;X_POTEAU_1;2460-35;1880;X_POTEAU_1;1670+35;1880;0;MAT=woodAuvent #traverse porte Sud
+TRAVERSE;70;70;X_POTEAU_1;2460-35;1880;X_POTEAU_1;1670+35;1880;0;MAT=woodAuvent #traverse porte Sud
 
 #CUTTER;x1;y1;z1;x2;y2;z2;x3;y3;z3;x4;y4;z4;direction;Id(panneau à couper)  #4 point + 1 direction, supprime la partie vers direction;objet= clin,lambris...
 #CLINS;x;y;z;largeur_x;hauteur_y;direction;orientation;pas;epaisseur;delta_hauteur;Id;MAT=woodAuvent

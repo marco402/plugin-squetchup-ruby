@@ -1,0 +1,7 @@
+-All dimensions are in mm.
+#Menu auvent->Générer ossature depuis fichier
+#Wall paneling cut at an angle with a utility knife
+  PANELING;-617;80;2252;617;618;yminus;vertical;70;10;0;TRIANGLE;MAT=lambris
+  #The 4 points of the cutter must be coplanar.
+  CUTTER;-618;60;2870;0;60;2252;0;120;2252;-618;120;2252;zminus;TRIANGLE  #zminus towards the part to be removed
+  

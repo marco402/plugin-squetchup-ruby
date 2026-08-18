@@ -1,0 +1,5 @@
+#Les côtes sont en mm
+#Menu auvent->Générer ossature depuis fichier
+#SOL
+  #SOL;sectionX;sectionY;hauteur;x(axe);y(axe);z;MAT=xxx
+  SOL;2715*2;1690*2;10;2715;1690;-10;MAT=sol_paves

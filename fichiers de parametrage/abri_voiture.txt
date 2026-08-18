@@ -52,25 +52,18 @@ LITEAU;7;50;25;MAT=woodAuvent	  #si fibrociment
 #direction(normale au panneau)xplus, xminus, yplus, yminus
 #lambris symetriques==>xplus = xminus et  yplus = yminus
 #orientation vertical ou horizontal
-DELTA_HAUTEUR=0     #test coupe(Z_POUTRE_MUR-Z_POUTRE)  #+SECTION_POUTRE_Z
-#DELTA_HAUTEUR croissant avec x ou y
+DELTA_HAUTEUR=1     #test coupe(Z_POUTRE_MUR-Z_POUTRE)  #+SECTION_POUTRE_Z
 #LAMBRIS;x;y;z;largeur_x;hauteur_y;direction;orientation;pas;epaisseur;delta_hauteur;ID;MAT=woodAuvent
 
 
 LAMBRIS;180;40;1730;2350;1140;yminus;vertical;70;10;0;NOID;MAT=lambris
 LAMBRIS;2710;40;1730;2340;1140;yminus;vertical;70;10;0;NOID;;MAT=lambris
 LAMBRIS;5230;40;1730;800-70;1140;yminus;vertical;70;10;0;NOID;;MAT=lambris
-HAUTLAMBRISCOTE=1140+160
 LAMBRIS;5960+30;180-55;1730;3290;2000;xplus;vertical;70;10;DELTA_HAUTEUR;MAT=lambris
-#LAMBRIS;5960+30;120;1730;3200;2000;xplus;vertical;70;10;DELTA_HAUTEUR;MAT=lambris
+
 #test triangle
 LAMBRIS;-617;80;2252;617;618;yminus;vertical;70;10;0;TRIANGLE;MAT=lambris
 CUTTER;-618;60;2870;0;60;2252;0;120;2252;-618;120;2252;zminus;TRIANGLE  #zmoins vers la partie a enlever
-#testExtrémité 1 : (-617,573593mm, 60mm, 2870mm)
-#testExtrémité 2 : (0mm, 60mm, 2252,426407mm)
-#testExtrémité 1 : (-617,573593mm, 120mm, 2870mm)
-#testExtrémité 2 : (0mm, 120mm, 2252,426407mm)
-
 
 #bandeau
 #POUTRE;20;150;DEPART_POUTRE;-DEPASSEMENT_CHEVRONS-20;Z_POUTRE+SECTION_POUTRE_Z;LONGUEUR_POUTRE;-DEPASSEMENT_CHEVRONS-20;Z_POUTRE+SECTION_POUTRE_Z;MAT=woodAuvent

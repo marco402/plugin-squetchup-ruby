@@ -1,0 +1,86 @@
+
+-All dimensions are in mm.
+-In general, x, y, z are the axes of the parts.
+-# comments out the line or the end of the line
+-Constants can be used with operations, e.g., WIDTH=30+20 and LENGTH=WIDTH+10
+
+POST  See "unit tests/test_POST.txt"
+  POST;section x;section y;post_top;x post;y post;z post;MAT=woodAuvent
+    -post_top is the top of the post
+
+BEAM  See "unit tests/test_BEAM.txt"
+  BEAM;section y;section z;x1;y1;z1;length;y2;z2;MAT=xxx
+    -x1, y1, z1 define a starting point
+    -y2, z2 define an ending point
+    -x2  The end is deducted from the length.
+    -length is the length of the beam projected on the x‑axis
+
+RAFTER See "unit tests/test_RAFTER.txt"
+  -Case 1: automatic placement on beams
+    RAFTER;count;section_x;section_z;overhang;MAT=xxx
+      -If count > 1: automatic placement on the outermost beams
+      -WARNING: if count > 1, you must have 2 beams to place the rafters
+  -Case 2: count < 2
+    RAFTER;count;section_x;section_z;overhang;x1;y1;z1;x2;y2;z2;MAT=xxx
+      -In this version, rafters are parallel to y: therefore x1 must equal x2  
+
+
+BATTEN See "unit tests/test_BATTEN.txt"
+   -Case 1: automatic placement on rafters
+     BATTEN;count;section_y;section_z;MAT=xxx
+       If count > 1: automatic placement on the outermost rafters
+       WARNING: if count > 1, you must have 2 rafters to place the battens
+   -Case 2: count < 2
+     BATTEN;count;section_y;section_z;x1;y1;z1;x2;y2;z2;MAT=xxx
+
+CLADDING See "unit tests/test_CLADDING.txt"
+  CLADDING;x;y;z;width_x;height_y;direction;orientation;spacing;thickness;height_delta;Id;MAT=xxx
+
+PANELING See "unit tests/test_PANELING.txt"
+  PANELING;x;y;z;width_x;height_y;direction;orientation;spacing;thickness;on_rafter;Id;MAT=xxx
+    -If on_rafter = 0 → rectangular panel
+    -If on_rafter > 0 → cuts the panel following the rafter (only implemented for xplus, xminus)
+
+PANEL or TOP See "unit tests/test_PANEL.txt"
+
+Case 1:panel parallel to x or y
+  PANEL;x1;y1;z1;x2;y2;z2;thickness;option;kind;radius;MAT=xxx  
+Case 2:
+  PANEL;x1;y1;z1;x2;y2;z2;x3;y3;z3;x4;y4;z4;thickness;option;kind;radius;MAT=xxx
+    -option 1: rounded corners with radius
+    -kind 1: polycarbonate
+    -kind 2: solid panel
+  
+FASCIA See "unit tests/test_FASCIA.txt"
+  FASCIA;sectionX;sectionY;MAT=xxx
+    -Requires at least 1 BATTEN to attach the fascia
+
+GUTTER See "unit tests/test_GUTTER.txt"
+  GUTTER;diameter;MAT=xxx
+
+GROUND See "unit tests/test_GROUND.txt"
+  GROUND;sectionX;sectionY;height;x(axis);y(axis);z;MAT=xxx
+
+XY or RAIL or UPRIGHT  See "unit tests/test_XY.txt"
+  XY;section_x;section_y;x1;y1;z1;x2;y2;z2;option;MAT=xxx
+    -option 1: chamfer
+    -option 2: V‑groove molding
+    -option 3: chamfer + V‑groove molding
+
+ANGLE_XZ  See "unit tests/test_ANGLE_XZ.txt"
+  ANGLE_XZ;sectionX;sectionY;x;y;z;length;angle_deg;top_point;MAT=xxx
+    -top_point = 0 → x,y,z = bottom point
+    -top_point = 1 → x,y,z = top point
+
+ANGLE_YZ  See "unit tests/test_ANGLE_YZ.txt"
+  ANGLE_YZ;sectionXY;sectionZ;x;y;z;length;angle_deg;top_point;MAT=xxx
+    -top_point = 0 → x,y,z = bottom point
+    -top_point = 1 → x,y,z = top point
+
+CUTTER  See "unit tests/test_CUTTER.txt"
+  CUTTER;x1;y1;z1;x2;y2;z2;x3;y3;z3;x4;y4;z4;direction;Id(panel_to_cut)
+    -4 points + 1 direction
+    -Removes the part located toward direction
+    -Target object = cladding, paneling, etc.
+    -For panels that do not touch a rafter or special cases,
+    -the Id of the cutter and the Id of the panel must match.

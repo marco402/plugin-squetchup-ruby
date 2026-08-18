@@ -1,0 +1,9 @@
+#Les côtes sont en mm
+#Menu auvent->Générer ossature depuis fichier
+#CLINS
+#CLINS;x;y;z;largeur_x;hauteur_y;direction;orientation;pas;epaisseur;delta_hauteur;Id;MAT=xxx
+
+  #CLINS;0;0;0;300;500;yminus;horizontal;130;20;0;Id;MAT=lambris
+  #CLINS;0;0;0;300;500;xminus;horizontal;130;20;0;Id;MAT=lambris
+  CLINS;0;0;0;300;500;yminus;vertical;130;20;50;Id;MAT=lambris
+  CLINS;0;0;0;300;500;xminus;vertical;130;20;50;Id;MAT=lambris

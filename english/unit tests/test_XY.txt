@@ -1,0 +1,11 @@
+-All dimensions are in mm.
+#Menu auvent->Générer ossature depuis fichier
+#XY or RAIL or UPRIGHT
+#XY;section_x;section_y;x1;y1;z1;x2;y2;z2;option;MAT=xxx 
+    -option 1: chamfer
+    -option 2: V‑groove molding
+    -option 3: chamfer + V‑groove molding
+   #-These moldings are on the 4 sides of the end at point x1;y1;z1
+   
+XY;80;80;100;200;300;100;200;600;3;MAT=woodAuvent
+#XY;80;80;100;200;600;100;200;300;3;MAT=woodAuvent

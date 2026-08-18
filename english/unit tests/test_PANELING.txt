@@ -1,0 +1,23 @@
+-All dimensions are in mm.
+#Menu auvent->Générer ossature depuis fichier
+#PANELING ou PANELING
+   #If on_RAFTER=0 rectangular panel
+   #If on_RAFTER > 0, cut the panel following the RAFTER (supported only for xplus, :xminus).
+#PANELING;x;y;z;width_x;height_y;direction;orientation;spacing;thickness;on_RAFTER;Id;MAT=xxx
+#xplus and xminus, or yplus and yminus, yield the same result if the paneling is symmetrical.
+#horizontals PANELINGs
+  #Normal in y
+    PANELING;0;0;0;300;500;yminus;horizontal;130;20;0;Id;MAT=lambris
+  #Normal in x
+  PANELING;100;100;100;300;500;xplus;horizontal;130;20;0;Id;MAT=lambris
+#verticals PANELINGs 
+  #Normal in y
+    PANELING;200;200;200;300;500;yplus;vertical;130;20;0;Id;MAT=lambris
+  #Normal in x   
+    PANELING;200;200;200;300;500;xminus;vertical;130;20;0;Id;MAT=lambris
+#PANELING cut at an angle using a CUTTER
+  PANELING;-617;80;2252;617;618;yminus;vertical;70;10;0;TRIANGLE;MAT=lambris
+  CUTTER;-618;60;2870;0;60;2252;0;120;2252;-618;120;2252;zminus;TRIANGLE  #zminus towards the part to be removed
+#PANELING cut along a RAFTER
+  RAFTER;0;30;60;0;6080;-290;2938;6080;3415;3670;MAT=woodAuvent
+  PANELING;5960+30;180-55;1730;3290;2000;xplus;vertical;70;10;1;MAT=lambris

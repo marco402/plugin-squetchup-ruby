@@ -1,0 +1,26 @@
+#drawing of a stool
+section_x=30
+section_y=40
+delta_upright=20
+height=500
+width_base=300
+UPRIGHT;section_x;section_y;0;0;0;delta_upright;delta_upright;height;option;MAT=woodAuvent     #montant 1
+UPRIGHT;section_x;section_y;width_base;0;0;width_base-delta_upright;delta_upright;height;option;MAT=woodAuvent     #montant 2
+UPRIGHT;section_x;section_y;width_base;width_base;0;width_base-delta_upright;width_base-delta_upright;height;option;MAT=woodAuvent     #montant 3
+UPRIGHT;section_x;section_y;0;width_base;0;delta_upright;width_base-delta_upright;height;option;MAT=woodAuvent     #montant 4
+
+#top
+#alignment of the top with the base
+thickness_top=30
+real_width_base=350
+radius=30
+TOP;-60;-60;height+thickness_top;real_width_base;real_width_base;height+thickness_top;thickness_top;1;2;radius;MAT=woodAuvent   #option:1 angles arrondis type 1:polycarbonate  type 2:panneau plein
+
+#rail
+section_rail_x=25
+section_rail_y=25
+
+RAIL;section_rail_x;section_rail_y;10;10;200;width_base-10;10;200;option;MAT=woodAuvent                           #rail 1 front en x
+RAIL;section_rail_x;section_rail_y;10;width_base-10;200;width_base-10;width_base-10;200;option;MAT=woodAuvent     #rail 2 rear en x
+RAIL;section_rail_x;section_rail_y;10;10;200;10;width_base-10;200;option;MAT=woodAuvent                           #rail 3 left en y
+RAIL;section_rail_x;section_rail_y;width_base-10;10;200;width_base-10;width_base-10;200;option;MAT=woodAuvent     #rail 4 wright en y

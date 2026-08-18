@@ -1,0 +1,6 @@
+#Les côtes sont en mm
+#Menu auvent->Générer ossature depuis fichier 
+  #il faut z > 0 sinon la porte est entièrement sous z et pas de chapeau.
+  #LAMBRIS;x;y;z;largeur_x;hauteur_y;direction;orientation;pas;epaisseur;sur_chevron;Id;MAT=xxx
+  LAMBRIS;0;0;1;1010;1500;yminus;vertical;112;20;0;CHAPEAU;MAT=lambris   #porte à chapeau
+  

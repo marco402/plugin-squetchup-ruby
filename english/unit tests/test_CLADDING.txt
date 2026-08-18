@@ -1,0 +1,9 @@
+-All dimensions are in mm.
+#Menu auvent->Générer ossature depuis fichier
+#CLADDING
+#CLADDING;x;y;z;width_x;height_y;direction;orientation;spacing;thickness;height_delta;Id;MAT=xxx
+
+#CLADDING;0;0;0;300;500;yminus;horizontal;130;20;0;Id;MAT=lambris
+#CLADDING;0;0;0;300;500;xminus;horizontal;130;20;0;Id;MAT=lambris
+CLADDING;0;0;0;300;500;yminus;vertical;130;20;50;Id;MAT=lambris
+CLADDING;0;0;0;300;500;xminus;vertical;130;20;50;Id;MAT=lambris

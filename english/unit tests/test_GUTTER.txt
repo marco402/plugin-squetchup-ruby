@@ -1,0 +1,10 @@
+-All dimensions are in mm.
+#Menu auvent->Générer ossature depuis fichier
+#The fascia is needed to mount the gutter; if there is no fascia, hide or delete RIVE_BASSE in the Outliner.
+#Alternatively, modify the code to anchor it relative to the batten.
+#The gutter is positioned 10 mm from the edge and at two-thirds of its height.
+  #BATTEN;0;30;40;0;0;0;500;0;0;MAT=woodAuvent
+  BATTEN;0;30;40;0;500;500;500;500;500;MAT=woodAuvent 
+  #FASCIA;sectionXY;sectionZ;MAT=xxx
+  FASCIA;22;150;MAT=woodAuvent 
+  GUTTER;100;MAT=goutiere

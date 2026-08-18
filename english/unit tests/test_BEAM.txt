@@ -1,0 +1,18 @@
+-All dimensions are in mm.
+#Menu auvent->Générer ossature depuis fichier
+#BEAM
+#BEAM;section y;section z;x1;y1;z1;length;y2;z2;MAT=xxx 
+#x1; y1; z1 define a starting point.
+#y2;z2 define an end point
+#The arrival point x2 is subtracted from the length.
+#length is the length of the projection of the BEAM onto x
+#Horizontal BEAM of projected length su x 1000, start axis in 0,0,0 end axis in 1000,0,0
+BEAM;40;60;0;0;0;1000;0;0;MAT=woodAuvent
+#Horizontal BEAM of length projected on x 1000, start axis in 0,0,0 end axis in 1000,0,100
+BEAM;40;60;0;0;0;1000;0;100;MAT=woodAuvent
+#Beam parallel to x-axis; projected length on x-axis: 1000; axis origin: 0,0,0; axis end: 0,0,300.
+BEAM;40;60;0;0;0;1000;0;300;MAT=woodAuvent
+#BEAM with projected length on X of 1000; start axis at 0,0,0; end axis at 0, 500, 300.
+BEAM;40;60;0;0;0;1000;500;300;MAT=woodAuvent
+#Beam parallel to the y-axis, with a projected length of 0 on the x-axis; start axis at (0, 0, 0), end axis at (0, 200, 300).
+BEAM;40;60;0;0;0;0;200;300;MAT=woodAuvent

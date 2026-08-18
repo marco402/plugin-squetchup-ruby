@@ -1,0 +1,15 @@
+-All dimensions are in mm.
+#Menu auvent->Generate framing from file
+#Requires at least 2 batten to attach the roof covering
+#for ROOF COVERING
+##The margins are hard-coded.
+   #        debords = {
+   #          gauche: 0.mm,
+   #          droite: 0.mm,
+   #          haut: 0.mm,
+   #          bas: 50.mm
+   #       }
+#after Generate framing from file--->Menu auvent->Generate roof covering
+ #BATTEN;number;section_xy;section_z;MAT=xxx
+  BATTEN;0;30;40;0;0;0;500;0;0;MAT=woodAuvent
+  BATTEN;0;30;40;0;500;500;500;500;500;MAT=woodAuvent

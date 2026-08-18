@@ -1,0 +1,23 @@
+#Les côtes sont en mm
+#Menu auvent->Générer ossature depuis fichier
+#LAMBRIS
+   #Si sur_chevron=0 panneau rectangulaire
+   #Si sur_chevron > 0 coupe le panneau en suivant le chevron.(prévu qu'en xplus, :xminus)
+#LAMBRIS;x;y;z;largeur_x;hauteur_y;direction;orientation;pas;epaisseur;sur_chevron;Id;MAT=xxx
+#xplus et xmoins ou yplus et ymoins donne le même résultat si le lambris est symétrique.
+#Lambris horizontaux
+  #Normale en y
+    LAMBRIS;0;0;0;300;500;yminus;horizontal;130;20;0;Id;MAT=lambris
+  #Normale en x
+  LAMBRIS;100;100;100;300;500;xplus;horizontal;130;20;0;Id;MAT=lambris
+#Lambris verticaux
+  #Normale en y
+    LAMBRIS;200;200;200;300;500;yplus;vertical;130;20;0;Id;MAT=lambris
+  #Normale en x   
+    LAMBRIS;200;200;200;300;500;xminus;vertical;130;20;0;Id;MAT=lambris
+#Lambris coupé en biais avec CUTTER
+  LAMBRIS;-617;80;2252;617;618;yminus;vertical;70;10;0;TRIANGLE;MAT=lambris
+  CUTTER;-618;60;2870;0;60;2252;0;120;2252;-618;120;2252;zminus;TRIANGLE  #zmoins vers la partie a enlever
+#Lambris coupé le long d'un chevron
+  CHEVRON;0;30;60;0;6080;-290;2938;6080;3415;3670;MAT=woodAuvent
+  LAMBRIS;5960+30;180-55;1730;3290;2000;xplus;vertical;70;10;1;MAT=lambris

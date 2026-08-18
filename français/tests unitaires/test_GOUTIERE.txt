@@ -1,0 +1,10 @@
+#Les côtes sont en mm
+#Menu auvent->Générer ossature depuis fichier
+#Il faut la rive pour fixer la gouttière si pas de rive, cacher ou effacer RIVE_BASSE dans outliner
+#sinon modifier pour se fixer par rapport au liteau
+#la gouttière est placée à 10mm de la rive et à 2 tiers de sa hauteur.
+  #LITEAU;0;30;40;0;0;0;500;0;0;MAT=woodAuvent
+  LITEAU;0;30;40;0;500;500;500;500;500;MAT=woodAuvent 
+  #RIVES;sectionXY;sectionZ;MAT=xxx
+  RIVES;22;150;MAT=woodAuvent 
+  GOUTIERE;100;MAT=goutiere

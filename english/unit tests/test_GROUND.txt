@@ -1,0 +1,5 @@
+-All dimensions are in mm.
+#Menu auvent->Générer ossature depuis fichier
+#GROUND
+  #GROUND;sectionX;sectionY;height;x(axis);y(axis);z;MAT=xxx
+  GROUND;2715*2;1690*2;10;2715;1690;-10;MAT=sol_paves

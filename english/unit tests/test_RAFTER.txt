@@ -1,0 +1,24 @@
+-All dimensions are in mm.
+#Menu auvent->Générer ossature depuis fichier
+#RAFTER
+# 2 cases
+#If the number is 0 or 1, there is no automatic placement on the BEAMs.
+  #x1;y1;z1 define a starting point
+  #x2,y2;z2 define a ending point
+  #In this version, the rafters are aligned along the y-axis: x1 must equal x2.
+  #RAFTER;number;section_xy;section_z;overhang;x1;y1;z1;x2;y2;z2;MAT=xxx
+
+#Number > 1 :automatic placement on the outermost beams
+  #Overhang: for automatic placement, overhang length of the bottom BEAM 
+  #RAFTER;number;section_xy;section_z;overhang;MAT=xxx
+
+#1-Case independent of the BEAMs
+  #RAFTER;0;30;60;0;0;0;0;0;500;200;MAT=woodAuvent  
+  #Horizontal
+    RAFTER;0;30;60;0;0;0;0;0;500;0;MAT=woodAuvent  
+#2-Case on BEAMs
+  #BEAM parallel to x-axis; projected length on x-axis: 1000; axis origin: 0,0,0; axis end: 0,0,300.
+  #BEAM;100;150;0;0;0;1000;0;0;MAT=woodAuvent    #low BEAM 
+  #BEAM parallel to x-axis, projected length on x = 1000; start axis at (0, 1000, 100), end axis at (1000, 1000, 100).
+  #BEAM;100;150;0;1000;500;1000;1000;500;MAT=woodAuvent  #high BEAM 
+  #RAFTER;3;60;150;50;MAT=woodAuvent    #The offset for the RAFTER on the lower BEAM is +20mm, and -20mm on the upper BEAM; start of creer_RAFTER

@@ -1,0 +1,18 @@
+#Les côtes sont en mm
+#Menu auvent->Générer ossature depuis fichier
+#POUTRE
+#POUTRE;section y;section z;x1;y1;z1;longueur;y2;z2;MAT=xxx 
+#x1;y1;z1 définissent un point de départ
+#y2;z2 définissent un point d'arrivée
+#x2 arrivé est déduit de la longueur 
+#longueur est la longueur de la projection de la poutre sur x
+#Poutre horizontale de longueur projetée su x 1000, axe de départ en 0,0,0 axe de fin en 1000,0,0
+  POUTRE;40;60;0;0;0;1000;0;0;MAT=woodAuvent
+#Poutre horizontale de longueur projetée sur x 1000, axe de départ en 0,0,0 axe de fin en 1000,0,100
+  POUTRE;40;60;0;0;0;1000;0;100;MAT=woodAuvent
+#Poutre parallèle à x  longueur projetée su x 1000, axe origine 0;0;0 axe de fin en 0,0,300
+  POUTRE;40;60;0;0;0;1000;0;300;MAT=woodAuvent
+#Poutre de longueur projetée su x 1000, axe origine 0;0;0 axe de fin en 0,500,300
+  POUTRE;40;60;0;0;0;1000;500;300;MAT=woodAuvent
+#Poutre parallèle à y de longueur projetée su x 0, axe origine 0;0;0 axe de fin en 0,200,300
+  POUTRE;40;60;0;0;0;0;200;300;MAT=woodAuvent

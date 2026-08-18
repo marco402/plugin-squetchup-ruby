@@ -16,35 +16,30 @@ require_relative "auvent/auvent"
 require_relative "auvent/PrintHierarchy"
 #download squetchup 2017:https://web.archive.org/web/20220217222923/https://download.sketchup.com/sketchupmake-2017-2-2555-90782-en-x64.exe
 #arborescence
-#AUVENT_SUD (ComponentDefinition)---------------------------->déduit du nom du fichier descriptif
+#AUVENT_SUD (ComponentDefinition)---------------------------->derived from the name of the descriptive file
 #  └── Ossature Auto (Group)
-#        ├── POTEAU (Group)
-#        ├── CHEVRON (Group)
-#        ├── LITEAU (Group)
-#        ├── GOUTIERE (Group?)
-#        ├── RIVE (Group?)
-#        |
-#        └── COUVERTURE(Group)
-
-#Objet                Type                   Ce qu’il contient
-#auvent_def           ComponentDefinition    La définition AUVENT_SUD
-#auvent_def.entities  Entities               Les entités internes du composant
-#root                 Group                  Le groupe “Ossature Auto” créé dans la définition
+#        ├── POST (Group)
+#        ├── RAFTER (Group)
+#        ├── BATTEN (Group)
+#        ├── GUTTER (Group)
+#        ├── FASCIA (Group)
+#        |...
+#        └── ROOFING(Group)
 
 module Auvent
   module UIAuvent
   #SECTION 1 — UI menu principal
     unless file_loaded?(__FILE__)
-      UI.menu("Plugins").add_item("Générer ossature depuis fichier") {
+      UI.menu("Plugins").add_item("Generate framing from file") {
         begin
           model = Sketchup.active_model
           model.layers.each { |layer| layer.visible = true }
-          path = UI.openpanel("Choisir le fichier ossature", "", "Texte|*.txt||")
+          path = UI.openpanel("Select the framing file", "", "Texte|*.txt||")
           next unless path
-          # --- Génération du nom de composant ---
+          # --- Component name generation ---
           filename  = File.basename(path, ".*")
           comp_name = filename.upcase.gsub(/\s+/, "_")
-          # On mémorise le nom du composant
+          # We store the component's name in memory.
           FctAuvent.last_component_name = comp_name
           FctAuvent.generer_ossature_depuis_fichier(path, comp_name)
           # model = Sketchup.active_model
@@ -62,11 +57,11 @@ module Auvent
         end
       }
 
-      UI.menu("Plugins").add_item("Générer couverture") {
+      UI.menu("Plugins").add_item("Generate roof covering") {
         begin
           root=get_root_auvent()
           if(root!=nil)
-            prompts  = ["Type de couverture"]
+            prompts  = ["Cover type"]
             defaults = [COVER_TYPES.values.first[:name]]
             list     = [COVER_TYPES.values.map { |t| t[:name] }.join("|")]
             result = UI.inputbox(prompts, defaults, list)
@@ -79,21 +74,21 @@ module Auvent
         end
       }
       
-      UI.menu("Plugins").add_item("Générer plan A4 (3 ou 4 vues)") {
+      UI.menu("Plugins").add_item("Generate A4 drawing (3 or 4 views)") {
         begin
           comp_name = FctAuvent.last_component_name
           if comp_name.nil?
-            UI.messagebox("Aucun auvent généré. Lance d'abord la génération de l'ossature.")
+            UI.messagebox("No canopy generated. Generate the framework first.")
             next
           end
           model = Sketchup.active_model
           auvent_inst = model.active_entities.grep(Sketchup::ComponentInstance)
           .find { |i| i.definition.name == comp_name }
           unless auvent_inst
-            UI.messagebox("Impossible de trouver l'auvent '#{comp_name}' dans le modèle.")
+            UI.messagebox("Unable to find the awning. '#{comp_name}' in the model.")
             return
           end
-          # Les entités du composant
+          # The component's entities
           main = auvent_inst
           if(comp_name=="AUVENT_GARAGE")
             gauche,face,dessus,droite= FctAuvent.generate_2d_views_from(main)
@@ -107,32 +102,32 @@ module Auvent
         end
       }
 
-      UI.menu("Plugins").add_item("Exporter plan A4 (JPG)") {
+      UI.menu("Plugins").add_item("Export A4 plan (JPG)") {
         begin
-          FctAuvent.export_plan_a4_optimise   #--->trop clair
+          FctAuvent.export_plan_a4_optimise 
         rescue => e
           UI.messagebox("#{e.class}: #{e.message}\n\n#{e.backtrace.join("\n")}")
           raise e
         end
       }
 
-      UI.menu("Plugins").add_item("Générer toiture sur garage") {
+      UI.menu("Plugins").add_item("Generate roof for garage") {
         begin
           model = Sketchup.active_model
           sel = model.selection
           if sel.empty? || !sel.first.is_a?(Sketchup::Group)
-            UI.messagebox("Sélectionne d'abord le groupe du garage.")
+            UI.messagebox("First, select the garage group.")
             next
           end
           garage = sel.first
           gents = garage.entities
-          prompts  = ["Type de couverture"]
+          prompts  = ["Cover type"]
           defaults = [COVER_TYPES.values.first[:name]]
           list     = [COVER_TYPES.values.map { |t| t[:name] }.join("|")]
           result = UI.inputbox(prompts, defaults, list)
           next unless result
-          FctAuvent.generate_couverture(result[0], garage,garage,0)             #pente 1   Est
-          FctAuvent.generate_couverture(result[0], garage,garage,1)             #pente 2  Ouest pb panneaux ?
+          FctAuvent.generate_couverture(result[0], garage,garage,0)             #Slope 1   East
+          FctAuvent.generate_couverture(result[0], garage,garage,1)             #Slope 2   West
           FctAuvent.delete_liteaux(gents)
         rescue => e
           UI.messagebox("#{e.class}: #{e.message}\n\n#{e.backtrace.join("\n")}")
@@ -140,7 +135,7 @@ module Auvent
         end
       }
 
-      UI.menu("Plugins").add_item("Exporter l'inventaire du matériel sur la console") {
+      UI.menu("Plugins").add_item("Export the hardware inventory from the console") {
         begin
           root=get_root_auvent()
           if(root!=nil)
@@ -153,12 +148,12 @@ module Auvent
       }
 
     #SECTION 2 — UI utilitaires
-      menu = UI.menu("Plugins").add_submenu("Utilitaires")
-      menu.add_item("Sélectionner une ligne") {
+      menu = UI.menu("Plugins").add_submenu("Utilities")
+      menu.add_item("Select a edge") {
         Sketchup.send_action("showRubyPanel:")
         UtilsAuvent.select_vertex
       }
-      menu.add_item("Afficher la Hierarchie dans la console") {
+      menu.add_item("Display the hierarchy in the console") {
         Sketchup.send_action("showRubyPanel:")
         Hierarchy.printHierarchy
       }
@@ -169,13 +164,13 @@ module Auvent
     def self.get_root_auvent()
         comp_name = FctAuvent.last_component_name
         if comp_name.nil?
-          UI.messagebox("Aucun auvent généré. Lance d'abord la génération de l'ossature.")
+          UI.messagebox("No canopy generated. Generate the framework first.")
           return nil
         end
         model = Sketchup.active_model
         auvent_def = model.definitions[comp_name]
         if auvent_def.nil?
-          UI.messagebox("Le composant '#{comp_name}' n'existe plus dans le modèle.")
+          UI.messagebox("The component '#{comp_name}' no longer exists in the model.")
           return nil
         end
         root = UtilsAuvent.get_ossature_group(auvent_def)

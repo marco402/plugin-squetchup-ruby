@@ -1,0 +1,82 @@
+
+-Les côtes sont en mm
+-En général x y z sont les axes des pièces.
+-# Commente la ligne ou la fin de ligne
+-Il est possible d'utiliser des constantes avec des opération LARGEUR=30+20 et LONGUEUR=LARGEUR+10
+
+POTEAU ou POST   voir "tests unitaires/test_POTEAU.txt"
+  POTEAU;section x;section y;sommet poteau;x poteau;y poteau;z poteau;MAT=woodAuvent 
+    -Sommet poteau est le dessus du poteau
+
+POUTRE ou BEAM   voir "tests unitaires/test_POUTRE.txt"
+  POUTRE;section y;section z;x1;y1;z1;longueur;y2;z2;MAT=xxx 
+    -x1;y1;z1 définissent un point de départ
+    -y2;z2 définissent un point d'arrivée
+    -x2 l'extrémitée est déduit de la longueur 
+    -Longueur est la longueur de la projection de la poutre sur x
+
+CHEVRON ou RAFTER voir "tests unitaires/test_CHEVRON.txt"
+  Cas 1:pose automatique sur les poutres
+    -CHEVRON;nombre;section_x;section_z;dépassement;MAT=xxx     nombre > 1 :pose automatique sur les poutres extrêmes
+      #ATTENTION:si nombre > 1 : il faut obligatoirement 2 poutres pour poser les chevrons
+  Cas 2: nombre < 2
+    -CHEVRON;nombre;section_x;section_z;dépassement;x1;y1;z1;x2;y2;z2;MAT=xxx 
+      -Dans cette version, les chevrons sont parallèle à  y: x1 doit être égal à x2
+
+LITEAU ou BATTEN  voir "tests unitaires/test_LITEAU.txt"
+  -Cas 1:nombre > 1
+    LITEAU;nombre;section_y;section_z;MAT=xxx
+      -Nombre > 1 :pose automatique sur les chevrons extrêmes
+      #ATTENTION:si nombre > 1 :il faut obligatoirement 2 chevrons pour poser les liteaux
+  -Cas 2: nombre < 2
+    LITEAU;nombre;section_y;section_z;x1;y1;z1;x2;y2;z2;MAT=xxx 
+
+CLINS ou CLADDING  voir "tests unitaires/test_CLINS.txt"
+  CLINS;x;y;z;largeur_x;hauteur_y;direction;orientation;pas;épaisseur;delta_hauteur;Id;MAT=xxx
+
+LAMBRIS ou PANELING  voir "tests unitaires/test_LAMBRIS.txt"
+  LAMBRIS;x;y;z;largeur_x;hauteur_y;direction;orientation;pas;épaisseur;sur_chevron;Id;MAT=xxx 
+    -Si sur_chevron=0 panneau rectangulaire
+    -Si sur_chevron > 0 coupe le panneau en suivant le chevron.(prévu qu'en xplus, :xminus)
+
+PANNEAU ou PANEL ou DESSUS ou TOP  voir "tests unitaires/test_PANNEAU.txt"
+  -Cas 1:-panneau parallèle à x ou y 
+    PANNEAU;x1;y1;z1;x2;y2;z2;épaisseur;option;type;rayon;MAT=xxx  
+  -Cas 2:
+    PANNEAU;x1;y1;z1;x2;y2;z2;x3;y3;z3;x4;y4;z4;épaisseur;option;type;rayon;MAT=xxx
+      -Option:1 angles arrondis de rayon rayon uniquement pour un panneau horizontal.
+      -Type 1:polycarbonate
+      -Type 2:panneau plein
+
+RIVES ou FASCIA  voir "tests unitaires/test_RIVES.txt"
+  RIVES;sectionX;sectionY;MAT=xxx
+    -Pour la RIVES, il faut au moins 1 LITEAU pour se fixer dessus
+
+GOUTIERE ou GUTTER  voir "tests unitaires/test_GOUTIERE.txt"
+  GOUTIERE;diamètre;MAT=xxx
+
+SOL ou GROUND  voir "tests unitaires/test_SOL.txt"
+  SOL;sectionX;sectionY;hauteur;x(axe);y(axe);z;MAT=xxx
+
+XY ou TRAVERSE ou MONTANT ou RAIL ou UPRIGHT  voir "tests unitaires/test_XY.txt"
+  XY;section_x;section_y;x1;y1;z1;x2;y2;z2;option;MAT=xxx
+    -Option 1: chanfrein,
+    -Option 2: moulure en V,
+    -Option 3: chanfrein + moulure en V
+
+ANGLE_XZ  voir "tests unitaires/test_ANGLE_XZ.txt"
+  ANGLE_XZ;sectionX;sectionY;x;y;z;longueur;angle_deg;point_haut;MAT=xxx
+    -Point_haut=0 x,y,z= point bas
+    -Point_haut=1 x,y,z= point haut
+
+ANGLE_YZ  voir "tests unitaires/test_ANGLE_YZ.txt"
+  ANGLE_YZ;sectionXY;sectionZ;x;y;z;longueur;angle_deg;point_haut;MAT=xxx
+    -Point_haut=0 x,y,z= point bas
+    -Point_haut=1 x,y,z= point haut
+
+CUTTER  voir "tests unitaires/test_CUTTER.txt"
+  CUTTER;x1;y1;z1;x2;y2;z2;x3;y3;z3;x4;y4;z4;direction;Id(panneau à couper)
+    -4 point + 1 direction,
+    -Supprime la partie vers direction;objet= clin,lambris...
+    -Pour les panneaux qui ne tangentent pas un chevron ou pour des cas particulier,
+    -L'id entre le cutter et l'id du panneau à traiter doivent correspondre

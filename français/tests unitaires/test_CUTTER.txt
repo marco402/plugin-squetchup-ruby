@@ -1,0 +1,7 @@
+#Les côtes sont en mm
+#Menu auvent->Générer ossature depuis fichier
+#Lambris coupé en biais avec CUTTER
+  LAMBRIS;-617;80;2252;617;618;yminus;vertical;70;10;0;TRIANGLE;MAT=lambris
+  #Les 4 points du cutter doivent êtres coplanaires
+  CUTTER;-618;60;2870;0;60;2252;0;120;2252;-618;120;2252;zminus;TRIANGLE  #zmoins vers la partie a enlever
+  

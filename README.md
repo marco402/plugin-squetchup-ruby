@@ -1,7 +1,19 @@
 French version after English version.
-
 ---------------------------------------------------------------------------------------------------------------------------
-   I am sharing this SketchUp plugin, which I developed for my own needs with the help of Copilot.
+version 3:
+   Added Folder English
+     -Added 14 units tests for each matérial folder unit tests.
+     -I also put the menu in English(UI_auvent.rb)in the "english" folder.
+
+version 2:
+   -Stool test addition – folder "test stool"
+   -Added code for the stool top with 4 rounded corners.
+   -Added tests to paste into the Ruby console:
+       V-groove on one face and on four faces folder "tests console ruby".
+   -V-groove and chamfer correction.
+   
+version 1:
+ I am sharing this SketchUp plugin, which I developed for my own needs with the help of Copilot.
 
    It allows you to draw canopies or other assemblies in SketchUp based on a configuration file.
 
@@ -50,8 +62,8 @@ For panels that do not touch a rafter or for special cases,
      - 2 rafters to support the battens
      - 2 battens to support the roofing (see menu)
 
-# Plugin composition in C:\Users\userNameAppData\Roaming\SketchUp\SketchUp 2017\SketchUp
-     \Plugins
+# Plugin composition in 
+    C:\Users\userName\AppData\Roaming\SketchUp\SketchUp 2017\SketchUp\Plugins
           - UI_auvent.rb
                - auvent\auvent.rb
                - auvent\auvent_constants.rb
@@ -112,6 +124,18 @@ For panels that do not touch a rafter or for special cases,
         - Right-click and select "Save as" to ...\SketchUp\Plugins\auvent\materialsAuvent
 
 ---------------------------------------------------------------------------------------------------------------------------
+version 3:
+   -Ajout de 14 tests unitaires pour chaque type d'élément.
+   -Création d'un dossier français et english.
+
+version 2 :
+   - Ajout  test dessin d'un tabouret  – dossier:"test tabouret"
+   - Ajout du code pour le dessus du tabouret avec 4 coins arrondis.
+   - Ajout de tests à coller dans la console Ruby :
+       rainure en V sur une face et sur quatre faces - dossier: "tests console Ruby".
+   - Correction de la rainure en V et du chanfrein.
+   
+version 1 :
    Je partage ce plugin squetchup que j'ai développé pour mes besoins personnels avec l'aide de copilot.
    
    Il permet de tracer des auvents ou d'autres ensembles dans squetchup à partir d'un fichier de paramétrage.
@@ -161,8 +185,8 @@ Pour les panneaux qui ne tangente pas un chevron ou pour des cas particulier,
      - 2 chevrons pour poser les liteaux
      - 2 liteaux pour poser la couverture(voir menu) 
 
-# Composition du plugin dans C:\Users\userNameAppData\Roaming\SketchUp\SketchUp 2017\SketchUp
-     \Plugins
+# Composition du plugin dans 
+     C:\Users\userName\AppData\Roaming\SketchUp\SketchUp 2017\SketchUp\Plugins
           - UI_auvent.rb	
                - auvent\auvent.rb
                - auvent\auvent_constants.rb

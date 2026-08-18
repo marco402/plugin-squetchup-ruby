@@ -1,0 +1,9 @@
+-All dimensions are in mm.
+#Menu auvent->Générer ossature depuis fichier
+#At least 1 batten for installing the fascia
+#If the profile is modified (edge added), check the gutter.
+#FASCIA
+  #BATTEN;0;30;40;0;0;0;500;0;0;MAT=woodAuvent
+  BATTEN;0;30;40;0;500;500;500;500;500;MAT=woodAuvent 
+  #FASCIA;sectionXY;sectionZ;MAT=xxx
+  FASCIA;22;150;MAT=woodAuvent

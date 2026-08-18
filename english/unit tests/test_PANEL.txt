@@ -1,0 +1,31 @@
+-All dimensions are in mm.
+#Menu auvent->Générer ossature depuis fichier
+#PANEL ou TOP
+    -option 1: rounded corners with radius
+    -kind 1: polycarbonate
+    -kind 2: solid panel
+#Option 1 (rounded corners) is intended only for a horizontal panel.
+#2 Cases:
+# Case 1:PANEL;x1;y1;z1;x2;y2;z2;thickness;option;kind;radius;MAT=xxx  
+  #solid panel
+    PANEL;2000;50;100;2000;1050;1000;25;0;2;0;MAT=lambris
+  #polycarbonate panel
+    PANEL;0;50;100;1000;50;1000;25;0;1;0;MAT=EffetTransparent
+  #solid panel with rounded corners
+    TOP;3000;500;100;4000;1000;100;25;1;2;50;MAT=woodAuvent   #radius de 50mm
+  #horizontal panel
+    PANEL;0;0;2000;1000;1000;2000;25;0;1;0;MAT=EffetTransparent
+# Case 2:panel;x1;y1;z1;x2;y2;z2;x3;y3;z3;x4;y4;z4;thickness;option;kind;radius;MAT=xxx
+  #The four points must be coplanar.
+  #The four points must be ordered correctly; opposite angles must not be consecutive.
+  #panel plein
+    PANEL;1500;0;0;1500;1000;0;1500;1000;1000;1500;0;1000;25;0;2;0;MAT=lambris
+  #solid panel
+    PANEL;2800;50;100;2800;50;1000;2800;1050;1000;2800;1050;100;25;0;2;0;MAT=lambris
+  #panel polycarbonate
+    TOP;4000;50;100;4000;50;1000;4000;1050;1000;4000;1050;100;25;0;1;0;MAT=EffetTransparent
+  #solid panel with rounded corners
+    PANEL;3000;500;1000;4000;500;1000;4000;1000;1000;3000;1000;1000;25;1;2;50;MAT=woodAuvent
+  #single-axis tilted panel
+    PANEL;6500;50;100;6500;50;1000;5000;1050;1000;5000;1050;100;25;0;2;0;MAT=lambris
+    PANEL;8000;50;100;8000;50;1000;7000;1050;1000;7000;1050;100;25;0;1;0;MAT=EffetTransparent

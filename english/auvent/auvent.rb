@@ -11,16 +11,16 @@
 # All text above must be included in any redistribution.
 #  **********************************************************************************
 
-#Déposer ce fichier dans :
+#Place this file in / Déposer ce fichier dans :
 #C:\Users\...\AppData\Roaming\SketchUp\SketchUp xxx\SketchUp\Plugins\
-#Relancer SketchUp
+#Restart SketchUp / Relancer SketchUp
 #Extensions → Auvent
 
 module Auvent
   module FctAuvent
 
     @materials = {}
-    @last_component_name = nil   # mémorise le nom du composant généré
+    @last_component_name = nil   #stores the name of the generated component /  mémorise le nom du composant généré
 
     #************************Instances-Definition-Composant************************************
 
@@ -56,15 +56,13 @@ module Auvent
     def self.generer_ossature_depuis_fichier(path, comp_name)
       #FctAuvent.materials.merge!(load_all_materials_from("materialsAuvent"))
       model = Sketchup.active_model
-      puts "=== generer_ossature_depuis_fichier(#{path}, #{comp_name}) ==="
+      puts "===generate_framework_from_file / generer_ossature_depuis_fichier(#{path}, #{comp_name}) ==="
       model.start_operation("Génération Auvent", true)
       auvent_def = get_or_create_definition(comp_name)
-      puts "def trouvé/créé : #{auvent_def} (instances: #{auvent_def.instances.length})"
+      puts "def found/created / def trouvé/créé : #{auvent_def} (instances: #{auvent_def.instances.length})"
       inst = auvent_def.instances.first
       tr = inst ? inst.transformation.clone : nil
-      #puts "inst existante ? #{!inst.nil?} / tr=#{tr.inspect}"
       clear_definition(auvent_def)
-      #puts "def nettoyée (entities: #{auvent_def.entities.length})"
       FctAuvent.materials.merge!(load_all_materials_from("materialsAuvent"))
       generer_ossature(auvent_def.entities, path)
       if tr
@@ -100,11 +98,11 @@ module Auvent
     def self.dispatch_type_piece(root, p,layer_auvent)
       type = p[0]
       case type
-      when "POTEAU"
+      when "POTEAU","POST"
         piece_verticale(root, p)
-      when "POUTRE"
+      when "POUTRE","BEAM"
         piece_direction(root, p)
-      when "SOL"
+      when "SOL","GROUND"
         piece_verticale(root, p)
       when "PENTE"
         piece_pente(root, p)
@@ -112,21 +110,21 @@ module Auvent
         piece_angle_xz(root, p)
       when "ANGLE_YZ"
         piece_angle_yz(root, p)
-      when "CHEVRON"
-        generate_chevrons_sur_poutres(root,p[1],[p[3],p[2]],p[4],p[5])
-      when "LITEAU"
-        generate_liteaux_sur_chevrons(root,p[1],[p[3],p[2]],p[4])
-      when "RIVES"
+      when "CHEVRON","RAFTER"
+        generate_chevrons_sur_poutres(root,p)
+      when "LITEAU","BATTEN"
+        generate_liteaux_sur_chevrons(root,p)
+      when "RIVES","FASCIA"
         generer_rives(root, layer_auvent,p)
-      when "GOUTIERE"
-        generer_gouttieres(root, layer_auvent,p)
-      when "LAMBRIS"
+      when "GOUTIERE","GUTTER"
+        generer_goutieres(root, layer_auvent,p)
+      when "LAMBRIS","PANELING"
         piece_panneau_lambris(root, p)
-      when "CLINS"
+      when "CLINS","CLADDING"
         piece_panneau_clins(root, p)
-      when "PANNEAU"
+      when "PANNEAU","DESSUS","PANEL","TOP"
         piece_panneau(root, p)
-      when "XY"
+      when "XY","TRAVERSE","MONTANT","RAIL","UPRIGHT"
         g=piece_xy(root, p)
       when "RENFORT_45"
         piece_renfort_45(root, p)
@@ -136,6 +134,11 @@ module Auvent
         puts "Type inconnu : #{type}"
       end
     end
+
+#generate_couverture handles the following cases:
+#  for canopies: minimum of 2 battens oriented along the X-axis; the roofing extends from the minimum Y-coordinate to the maximum Y-coordinate of the battens
+#   special case: garage (see menu)
+#    2 battens for a single-slope roof (comment out menu index 1) or 3 battens for a dual-slope roof (indices 0 and 1)
 
 #generate_couverture traite les cas suivant:
 #  pour les auvents:minimum 2 liteaux orientés sur X , la couverture ira de y mini a y maxi des liteaux
@@ -173,9 +176,9 @@ module Auvent
         }
       end
       # --- Sélection des liteaux ---
-      liteaux = root.entities.grep(Sketchup::Group).select { |g| g.name == "LITEAU" }   #classement: Est  Ouest   Milieu
+      liteaux = root.entities.grep(Sketchup::Group).select { |g| g.name == "LITEAU" || g.name == "BATTEN"}   #classement: Est  Ouest   Milieu
       if liteaux.length < 2
-        puts("abandon,nb liteaux < 2 #{liteaux.length}")
+        puts("abandon, no. of battens < 2 / abandon,nb liteaux < 2 #{liteaux.length}")
         return
       end
       # --- Conversion locale → globale ---
@@ -233,16 +236,16 @@ module Auvent
                   #pour liteau bas:EST dans long_edges_bas prendre YMIN
                   e_bas=UtilsAuvent.edge_with_lowest_y(long_edges_bas)
                   #pour liteau haut  dans long_edges_haut prendre Y<
-                  e_haut=UtilsAuvent.edge_with_lowest_y(long_edges_haut)
+                  e_haut=UtilsAuvent.edge_with_highest_y(long_edges_haut)  #edge_with_lowest_y
         else        #OUEST
                   #pour liteau bas:OUEST  dans long_edges_bas prendre YMAX
                   e_bas=UtilsAuvent.edge_with_highest_y(long_edges_bas)
                   #pour liteau haut: dans long_edges_haut prendre Y>
-                  e_haut=UtilsAuvent.edge_with_highest_y(long_edges_haut)
+                  e_haut=UtilsAuvent.edge_with_lowest_y(long_edges_haut)    #edge_with_highest_y
         end
       else
         e_bas=UtilsAuvent.edge_with_lowest_y(long_edges_bas)
-        e_haut=UtilsAuvent.edge_with_highest_y(long_edges_haut)
+        e_haut=UtilsAuvent.edge_with_lowest_y(long_edges_haut)                              #edge_with_highest_y
       end
       # --- Points en GLOBAL ---
       p1 = to_global.call(liteau_bas,  e_bas.start.position)
@@ -253,13 +256,19 @@ module Auvent
       # Axe X = largeur (liteaux parallèles à X)
       # Axe Y = pente (chevrons parallèles à Y)
       pts = [p1, p2, p3, p4].uniq
-      face = root.entities.add_face(pts)
+      #face = root.entities.add_face(pts)
       if (option==1)
         pts = [p4, p3, p2, p1].uniq
       end
       return if pts.length < 3
       pts=debord_toit_fct_liteaux(pts,debords: debords)
-      face = root.entities.add_face(pts)
+      delta_z_liteau=((pts[3].z-pts[0].z)/(pts[3].y-pts[0].y))*30.mm
+      pts[0]=Geom::Point3d.new(pts[0].x,  pts[0].y, pts[0].z)
+      pts[1]=Geom::Point3d.new(pts[1].x,  pts[1].y, pts[1].z)
+      pts[2]=Geom::Point3d.new(pts[2].x,  pts[2].y+30.mm, pts[2].z + delta_z_liteau )
+      pts[3]=Geom::Point3d.new(pts[3].x,  pts[3].y+30.mm, pts[3].z + delta_z_liteau)
+      #pour test
+      #face = root.entities.add_face(pts)
       generate_couverture_suite(cover_type_key, root,pts ,last_component_name)
     end
 
@@ -286,6 +295,8 @@ module Auvent
         puts "⚠️ Type de couverture inconnu : #{cover_type_key}"
       end
     end
+
+
 
     def self.generate_couverture_tuiles(gents, face, mat, type_key)
       return unless face.is_a?(Sketchup::Face)
@@ -321,9 +332,117 @@ module Auvent
         Geom::Point3d.new(0,            0, ep),
         Geom::Point3d.new(largeur+0.1.mm, 0, ep)
       ]
+      put_profil_to_zero(pts_ext,pts_int)
       pts_ext + pts_int.reverse
     end
-    
+
+    def self.profil_fibrociment_epais(ep , largeur, h, nondes)
+      #il faut que le bas du profil z soit à 0
+      steps = 20   #48  problème de pile(stack) si +
+      pts_ext = []
+      pts_int = []
+      steps.times do |i|
+        t = i.to_f / (steps - 1)
+        x = t * largeur
+        # Onde complète : monte puis redescend
+        z = (1 - Math.cos(2 * Math::PI * t)) * (h / 2)
+        pts_ext << Geom::Point3d.new(x, 0, z + ep)
+      end
+      pts_ext.each { |p| pts_int << Geom::Point3d.new(p.x+0.1.mm, 0, p.z + ep)}
+      put_profil_to_zero(pts_ext,pts_int)
+      return pts_ext + pts_int.reverse
+    end
+
+    def self.profil_onduline_epais(ep)
+      #il faut que le bas du profil soit à 0
+      h = 20.mm
+      flat_before = 15.mm
+      b1   = 7.5.mm
+      top  = 25.mm
+      b2   = 7.5.mm
+      flat_after = 15.mm
+      # Largeur totale de l’onde
+      largeur_totale = flat_before + b1 + top + b2 + flat_after
+      pts_ext = []
+      pts_int = []
+      # Décalage anti-croisement
+      x = 0.1.mm
+      # --- Peau extérieure (profil nu) ---
+      pts_ext << Geom::Point3d.new(x, 0, 0)
+      x += flat_before
+      pts_ext << Geom::Point3d.new(x, 0, 0)
+      x += b1
+      pts_ext << Geom::Point3d.new(x, 0, h)
+      x += top
+      pts_ext << Geom::Point3d.new(x, 0, h)
+      x += b2
+      pts_ext << Geom::Point3d.new(x, 0, 0)
+      x += flat_after
+      pts_ext << Geom::Point3d.new(x, 0, 0)
+      # --- Peau intérieure (épaisseur en +Z local + décalage X) ---
+      pts_int = pts_ext.map { |p| Geom::Point3d.new(p.x + 0.1.mm, p.y, p.z + ep) }
+      put_profil_to_zero(pts_ext,pts_int)
+      # --- Profil épais fermé ---
+      profil_epais = pts_ext + pts_int.reverse
+      return profil_epais, largeur_totale
+    end
+
+    def self.profil_tuiles_canal_epais(ep, largeur, angle, segments)
+      rayon_int = (largeur-50.mm) / 2.0
+      rayon_ext = rayon_int + ep
+      pts_int = []
+      pts_ext = []
+      x=0
+      z=0
+      (0..segments).each do |i|
+        a = -angle/2 + angle * i.to_f / segments
+        z = Math.cos(a) * rayon_int + rayon_int
+        x = Math.sin(a) * rayon_int
+        pts_int << Geom::Point3d.new(x, 0, z)
+      end
+      pts_int << Geom::Point3d.new(x+50.mm, 0, z)
+      (0..segments).each do |i|
+        a = -angle/2 + angle * i.to_f / segments
+        z = Math.cos(a) * rayon_ext + rayon_int
+        x = Math.sin(a) * rayon_ext
+        pts_ext << Geom::Point3d.new(x, 0, z)
+      end
+      pts_ext << Geom::Point3d.new(x+50.mm, 0, z)
+      put_profil_to_zero(pts_ext,pts_int)
+      pts_ext + pts_int.reverse
+    end
+
+    def self.profil_tuiles_romanes_epais(ep, plat, galbe, h, segments)
+      pts_int = []
+      pts_ext = []
+      # Plat
+      pts_int << Geom::Point3d.new(0,      0, 0)
+      pts_int << Geom::Point3d.new(plat,   0, 0)
+      # Galbe
+      rayon = (galbe**2 + h**2) / (2*h)
+      centre_x = plat + (rayon - h)
+      (0..segments).each do |i|
+        a = Math::PI - Math::PI * i.to_f / segments
+        x = centre_x + Math.cos(a) * rayon
+        z = Math.sin(a) * rayon
+        pts_int << Geom::Point3d.new(x, 0, z)
+      end
+      pts_int.each { |p| pts_ext << Geom::Point3d.new(p.x, 0, p.z + ep) }
+      put_profil_to_zero(pts_ext,pts_int)
+      pts_ext + pts_int.reverse
+    end
+
+    def self.put_profil_to_zero(pts_ext,pts_int)
+      #rechercher le min z le déduire à tous les z
+      z_values = pts_ext.map { |p| p.z }
+      z_min_ext = z_values.min
+      z_values = pts_int.map { |p| p.z }
+      z_min_int = z_values.min
+      z_min=[z_min_ext,z_min_int].min
+      pts_ext.each {|p| p.z = p.z-z_min}
+      pts_int.each {|p| p.z = p.z-z_min}
+    end
+
     def self.profil_renfort_45(root,p)
       #generation d'un profil à 45° en xz
       #calcul des 4 points a partir de l'axe
@@ -352,97 +471,41 @@ module Auvent
       apply_material(gents,material_name)
     end
 
-    def self.profil_fibrociment_epais(ep , largeur, h, nondes)
-      steps = 20   #48  problème de pile(stack) si +
-      pts_ext = []
-      pts_int = []
-      steps.times do |i|
-        t = i.to_f / (steps - 1)
-        x = t * largeur
-        # Onde complète : monte puis redescend
-        z = (1 - Math.cos(2 * Math::PI * t)) * (h / 2)
-        pts_ext << Geom::Point3d.new(x, 0, z + ep)
-      end
-      pts_ext.each { |p| pts_int << Geom::Point3d.new(p.x+0.1.mm, 0, p.z + ep) }
-      return pts_ext + pts_int.reverse
+      def self.profil_rives(sxy,sz,origin)
+      #
+      #     origine   X(2)     sxy            X(3)
+      #
+      #             sz-40mm
+      #
+      #               X(1)5mm  X(0)    X(0) ici pour ordonner les points sans calcul de la pente de X(5) à X(0)
+      #                        40mm
+      #                         X(5) sxy-10mm X(4) 
+      #
+      #
+      v_down = Geom::Vector3d.new(0,0,-1)
+      v_up = Geom::Vector3d.new(0,0,1)
+      v_x    = Geom::Vector3d.new(1,0,0)
+      v_x_minus    = Geom::Vector3d.new(-1,0,0)
+      p1_o = origin.offset(v_x, 0) 
+      p2_o = p1_o.offset(v_down, sz-40.mm)
+      new_origin = p2_o.offset(v_x, 5.mm)
+      pts=[]
+      p1 = new_origin.offset(v_x, 0)
+      pts << p1
+      p2 = p2_o   #-->p2 (pts[1]) ou p3 (pts[2])-->pivot bord vertical arrière de la rive
+      pts << p2
+      p3 =origin
+      pts << p3
+      p4 =  p3.offset(v_x, sxy)
+      pts << p4
+      p5 = p4.offset(v_down, sz)
+      pts << p5
+      p6 = p5.offset(v_x_minus, sxy-10.mm)
+      pts << p6
+      pts
     end
 
-    def self.profil_onduline_epais(ep)
-      h = 20.mm
-      flat_before = 15.mm
-      b1   = 7.5.mm
-      top  = 25.mm
-      b2   = 7.5.mm
-      flat_after = 15.mm
-      # Largeur totale de l’onde
-      largeur_totale = flat_before + b1 + top + b2 + flat_after
-      pts_ext = []
-      pts_int = []
-      # Décalage anti-croisement
-      x = 0.1.mm
-      # --- Peau extérieure (profil nu) ---
-      pts_ext << Geom::Point3d.new(x, 0, 0)
-      x += flat_before
-      pts_ext << Geom::Point3d.new(x, 0, 0)
-      x += b1
-      pts_ext << Geom::Point3d.new(x, 0, h)
-      x += top
-      pts_ext << Geom::Point3d.new(x, 0, h)
-      x += b2
-      pts_ext << Geom::Point3d.new(x, 0, 0)
-      x += flat_after
-      pts_ext << Geom::Point3d.new(x, 0, 0)
-      # --- Peau intérieure (épaisseur en +Z local + décalage X) ---
-      pts_int = pts_ext.map { |p| Geom::Point3d.new(p.x + 0.1.mm, p.y, p.z + ep) }
-      # --- Profil épais fermé ---
-      profil_epais = pts_ext + pts_int.reverse
-      return profil_epais, largeur_totale
-    end
-
-    def self.profil_tuiles_canal_epais(ep, largeur, angle, segments)
-      rayon_int = (largeur-50.mm) / 2.0
-      rayon_ext = rayon_int + ep
-      pts_int = []
-      pts_ext = []
-      x=0
-      z=0
-      (0..segments).each do |i|
-        a = -angle/2 + angle * i.to_f / segments
-        z = Math.cos(a) * rayon_int + rayon_int
-        x = Math.sin(a) * rayon_int
-        pts_int << Geom::Point3d.new(x, 0, z)
-      end
-      pts_int << Geom::Point3d.new(x+50.mm, 0, z)
-      (0..segments).each do |i|
-        a = -angle/2 + angle * i.to_f / segments
-        z = Math.cos(a) * rayon_ext + rayon_int
-        x = Math.sin(a) * rayon_ext
-        pts_ext << Geom::Point3d.new(x, 0, z)
-      end
-      pts_ext << Geom::Point3d.new(x+50.mm, 0, z)
-      pts_ext + pts_int.reverse
-    end
-
-    def self.profil_tuiles_romanes_epais(ep, plat, galbe, h, segments)
-      pts_int = []
-      pts_ext = []
-      # Plat
-      pts_int << Geom::Point3d.new(0,      0, 0)
-      pts_int << Geom::Point3d.new(plat,   0, 0)
-      # Galbe
-      rayon = (galbe**2 + h**2) / (2*h)
-      centre_x = plat + (rayon - h)
-      (0..segments).each do |i|
-        a = Math::PI - Math::PI * i.to_f / segments
-        x = centre_x + Math.cos(a) * rayon
-        z = Math.sin(a) * rayon
-        pts_int << Geom::Point3d.new(x, 0, z)
-      end
-      pts_int.each { |p| pts_ext << Geom::Point3d.new(p.x, 0, p.z + ep) }
-      pts_ext + pts_int.reverse
-    end
-
-    #*********************************Plans 2D**************************************
+#*********************************Plans 2D**************************************
 
     def self.generate_2d_views_layout
       model = Sketchup.active_model
@@ -527,7 +590,7 @@ module Auvent
         ents = entity.definition.entities
         tr_entity = entity.transformation
       else
-        puts "ERREUR: entity n'est ni Group ni Instance"
+        puts "ERROR: entity is not Group nor Instance"
         return
       end
       # Collecte récursive des faces ---
@@ -540,7 +603,7 @@ module Auvent
         def_droite = defs.add("VIEW_DROITE_#{entity.entityID}")
       end
       # Construction du repère local basé sur les chevrons ---
-      chevrons = ents.grep(Sketchup::Group).select { |g| g.name == "CHEVRON" }
+      chevrons = ents.grep(Sketchup::Group).select { |g| (g.name == "CHEVRON" || g.name == "RAFTER")}
       if chevrons.empty?
         u = Geom::Vector3d.new(1, 0, 0)
       else
@@ -895,8 +958,8 @@ module Auvent
           y_dessus - 10.mm/chosen_scale,
           4.mm/chosen_scale
         )
-        else
-          UI.messagebox("paramètres TN: nom pas trouvé,renommez le ou modifier ce if ou ajoutez le éventuellement sans traitement")
+        #else
+        #  UI.messagebox("paramètres TN: nom pas trouvé,renommez le ou modifier ce if ou ajoutez le éventuellement sans traitement")
       end
       new_face.transform!(Geom::Transformation.translation([x_face, y_face, 0]))
       new_dessus.transform!(Geom::Transformation.translation([x_face, y_dessus, 0]))
@@ -1274,28 +1337,30 @@ module Auvent
           f.back_material = mat
             f.pushpull(largeur_totale)
         end
-      else # vertical
-        case normal
-        when :xplus, :xminus
-          delta=delta_hauteur/nb_lames
-          faces.each_with_index do |f, i|
-            x0 = i * pas
-            ratio = x0 / largeur_totale.to_f
-            hauteur_lame = hauteur + ratio * delta_hauteur
-            ##       f.material = mat
-            ##       f.back_material = mat
-          f.pushpull(hauteur_lame)
+      else    #if(1==2) # vertical
+        if(delta_hauteur > 0)
+          case normal
+          when :xplus, :xminus
+            delta=delta_hauteur/nb_lames
+            faces.each_with_index do |f, i|
+              x0 = i * pas
+              ratio = x0 / largeur_totale.to_f
+              hauteur_lame = hauteur + ratio * delta_hauteur
+              ##       f.material = mat
+              ##       f.back_material = mat
+              f.pushpull(hauteur_lame)
+            end
+            ossature_group = get_ossature_group()
+            chevrons=get_chevrons_group(ossature_group)
+            coupe_panneau_auto(lambris_group,chevrons,mat)
+          end
+        else
+          faces.each do |f|
+            f.material = mat
+            f.back_material = mat
+            f.pushpull(hauteur)
+          end
         end
-        ossature_group = get_ossature_group()
-        chevrons=get_chevrons_group(ossature_group)
-        coupe_panneau_auto( lambris_group,chevrons,mat)
-      else
-        faces.each do |f|
-          f.material = mat
-          f.back_material = mat
-          f.pushpull(hauteur)
-        end
-      end
       end
       return lambris_group,pts_world
     end
@@ -1352,68 +1417,6 @@ module Auvent
       largeur_panneau = p1.distance(p2)
       longueur_panneau = p1.distance(p4)
       nb_panneaux = 1    #(largeur_panneau / (pas+delta_x_entre_tuiles)).ceil
-      largeur_totale_f = largeur_panneau.to_f
-      largeur_restante = largeur_totale_f - (pas_f.to_f * (nb_panneaux - 1))
-      edge_gauche = gents.add_line(p1, p4)
-      nb_panneaux.times do |i|
-        offset_x = x_axis.clone
-        pts = profil_global.map { |p| p + offset_x }
-        precision = 3 # nombre de décimales
-        face = cov_ents.add_face(pts)
-        next unless face
-        face.reverse! if face.normal.dot(z_axis) < 0
-        normal = face.normal
-        if normal.angle_between(Y_AXIS) > 90.degrees
-          face.reverse!
-        end
-        face.pushpull(longueur_panneau)
-      end   # end of nb_panneaux.times do |i|
-      edge_gauche.erase! if edge_gauche.valid?
-      cov_ents.grep(Sketchup::Edge).each { |e|
-        e.soft = true
-        e.smooth = true
-      }
-      mat = @materials[material_name]
-      UtilsAuvent.apply_material_stable(cov_ents, mat)
-    end
-
-    def self.extrude_panneau_plein(root, pts, profil, epaisseur, material_name,nom_group)
-      #  Créer un groupe pour la couverture
-      gents=root.entities
-      g = root.entities.add_group
-      g.name = nom_group
-      g.layer = root.layer
-      # Récupérer les entities du groupe
-      cov_ents = g.entities
-      # --- Points du toit ---
-      p1, p2, p3, p4 = pts
-      x_axis = p1.vector_to(p2)
-      x_axis.normalize!
-      # --- Axe Z : normale du toit (p1,p2,p4) ---
-      z_axis = p1.vector_to(p2) * p1.vector_to(p4)
-      z_axis.normalize!
-      # --- Axe Y : perpendiculaire à X et Z ---
-      y_axis = z_axis * x_axis
-      y_axis.normalize!
-      # --- Transformation du profil dans le repère du toit ---
-      profil_global = profil.map do |pt|
-        # IMPORTANT : conversion en Float ici aussi (SU2017 renvoie toujours Length)
-        x = pt.x.to_f          #undefined method `to_f' for Point3d(0.00393701, 0, 0):Geom::Point3d>
-        y = pt.y.to_f
-        z = pt.z.to_f
-        vx = x_axis.x * x + y_axis.x * y + z_axis.x * z    #Geom::Point3d can't be coerced into Float>
-        vy = x_axis.y * x + y_axis.y * y + z_axis.y * z
-        vz = x_axis.z * x + y_axis.z * y + z_axis.z * z
-        Geom::Point3d.new(
-          p1.x + vx,
-          p1.y + vy,
-          p1.z + vz
-        )
-      end  #profil.map do |pt|
-      pas_f = epaisseur.to_f
-      largeur_panneau = p1.distance(p2)
-      longueur_panneau = p1.distance(p4)
-      nb_panneaux = 1    #(largeur_panneau / (epaisseur+delta_x_entre_tuiles)).ceil
       largeur_totale_f = largeur_panneau.to_f
       largeur_restante = largeur_totale_f - (pas_f.to_f * (nb_panneaux - 1))
       edge_gauche = gents.add_line(p1, p4)
@@ -1610,6 +1613,15 @@ module Auvent
       apply_material(ents,material_name,dir)
     end
 
+    def self.extrude_panneau(root, new_pts, thickness_i, material_name,name)
+      gents = root.entities.add_group
+      gents.name = name
+      gents.layer = root.layer
+      ents=gents.entities
+      face = ents.add_face(new_pts)
+      face.pushpull(thickness_i)
+      apply_material(ents,material_name)
+    end
     #*********************************Pièces**************************************
 
     def self.piece_verticale(root, p)
@@ -1642,8 +1654,10 @@ module Auvent
       z2 = p[8]
       mat = p[-1]
       g = root.entities.add_group
-      if(last_component_name=="AUVENT_GARAGE")
+      if(last_component_name=="AUVENT_GARAGE" && x1 == x2 && p[0] !="TRAVERSE")
         g.name="CHEVRON"                            #les chevrons sont dans la longueur
+      elsif(last_component_name=="AUVENT_GARAGE" && y1 == y2 )
+        g.name="POUTRE"
       else
         g.name=p[0]
       end
@@ -1653,15 +1667,20 @@ module Auvent
         Geom::Point3d.new(x2, y2, z2)
       )
       extrude_piece(edge, sx, sy, mat)
-	  
       #traitement des options
       option_str=p[9].to_s
       face_ext = nil
       if(option_str=="1" || option_str=="2" || option_str=="3")
-         face_ext = g.entities.grep(Sketchup::Face).find { |f|
-            f.normal.samedirection?(Geom::Vector3d.new(0,0,1)) #cherche une façe normale à z
-         }
+        face_ext = g.entities.grep(Sketchup::Face).find { |f|
+          f.normal.samedirection?(Geom::Vector3d.new(0,0,1)) #cherche une face normale à z
+        }
+        if (face_ext==nil)
+          face_ext = g.entities.grep(Sketchup::Face).find { |f|
+            f.normal.samedirection?(Geom::Vector3d.new(0,0,-1)) #cherche une face normale à z
+          }
+        end
       end
+
       case option_str
         when "1"
           #chanfrein à 45° de 10*10mm
@@ -1732,7 +1751,7 @@ module Auvent
       z2 = p[8]
       mat = p[-1]
       g = root.entities.add_group
-      g.name = "POUTRE"
+      g.name = p[0]
       g.layer = root.layer
       edge = g.entities.add_line(
         Geom::Point3d.new(x1, y1, z1),
@@ -1772,66 +1791,105 @@ module Auvent
 
     def self.piece_panneau(root, p)
       new_pts = []
-      new_pts[0] = Geom::Point3d.new(
-        p[1].to_f,
-        p[2].to_f,
-        p[3].to_f
-      )
-      new_pts[2] = Geom::Point3d.new(
-        p[4].to_f,
-        p[5].to_f,
-        p[6].to_f
-      )
-	  #il faut générer les 2 points manquants
-      # Position du panneau vertical sur x ou vertical sur y ou horizontal
-	  #il faudra soit ajouter 1 ou 2 angles pour panneaus en biais soit ajouter 2 points
-	  #les points sont numérotés de 0 à 3 sens trigo
-      if (p[1]==p[4])   #x identiques panneau sur y, 
-        new_pts[1] = Geom::Point3d.new(
+        new_pts[0] = Geom::Point3d.new(
           p[1].to_f,
           p[2].to_f,
-          p[6].to_f
-        )
-        new_pts[3] = Geom::Point3d.new(
-          p[1].to_f,
-          p[5].to_f,
           p[3].to_f
         )
-      elsif (p[2]==p[5])  #y identiques panneau sur x
-        new_pts[3] = Geom::Point3d.new(
-          p[1].to_f,
+        new_pts[2] = Geom::Point3d.new(
+          p[4].to_f,
           p[5].to_f,
           p[6].to_f
         )
-        new_pts[1] = Geom::Point3d.new(
-          p[4].to_f,
-          p[5].to_f,
-          p[3].to_f
-        )
-      elsif (p[3]==p[6])  #z identique panneau horizontal
-        new_pts[3] = Geom::Point3d.new(
+      thickness_i=nil
+      if(p.length<15)
+        new_pts[0] = Geom::Point3d.new(
           p[1].to_f,
-          p[5].to_f,
-          p[6].to_f
-        )
-        new_pts[1] = Geom::Point3d.new(
-          p[4].to_f,
           p[2].to_f,
           p[3].to_f
         )
+        new_pts[2] = Geom::Point3d.new(
+          p[4].to_f,
+          p[5].to_f,
+          p[6].to_f
+        )
+        thickness_i=p[7]
+        option_str=p[8].to_s
+        type_str=p[9].to_s
+        rayon=p[10]
+
+        #il faut générer les 2 points manquants
+        # Position du panneau vertical sur x ou vertical sur y ou horizontal
+        #il faudra soit ajouter 1 ou 2 angles pour panneaus en biais soit ajouter 2 points
+        #les points sont numérotés de 0 à 3 sens trigo
+        if (p[1]==p[4])   #x identiques panneau sur y, 
+          new_pts[1] = Geom::Point3d.new(
+            p[1].to_f,
+            p[2].to_f,
+            p[6].to_f
+          )
+          new_pts[3] = Geom::Point3d.new(
+            p[1].to_f,
+            p[5].to_f,
+            p[3].to_f
+          )
+        elsif (p[2]==p[5])  #y identiques panneau sur x
+          new_pts[3] = Geom::Point3d.new(
+            p[1].to_f,
+            p[5].to_f,
+            p[6].to_f
+          )
+          new_pts[1] = Geom::Point3d.new(
+            p[4].to_f,
+            p[5].to_f,
+            p[3].to_f
+          )
+        elsif (p[3]==p[6])  #z identique panneau horizontal
+          new_pts[3] = Geom::Point3d.new(
+            p[1].to_f,
+            p[5].to_f,
+            p[6].to_f
+          )
+          new_pts[1] = Geom::Point3d.new(
+            p[4].to_f,
+            p[2].to_f,
+            p[3].to_f
+          )
+        #else
+          #puts ("panneaux traités vertical ou horizontal à compléter si nécessaire")
+        end
       else
-        puts ("panneaux traités vertical ou horizontal à compléter si nécessaire")
+        new_pts[0] = Geom::Point3d.new(
+          p[1].to_f,
+          p[2].to_f,
+          p[3].to_f
+        )
+        new_pts[1] = Geom::Point3d.new(
+          p[4].to_f,
+          p[5].to_f,
+          p[6].to_f
+        )
+        thickness_i=p[13]
+        option_str=p[14].to_s
+        type_str=p[15].to_s
+        rayon=p[16]
+        new_pts[2] = Geom::Point3d.new(
+          p[7].to_f,
+          p[8].to_f,
+          p[9].to_f
+        )
+        new_pts[3] = Geom::Point3d.new(
+          p[10].to_f,
+          p[11].to_f,
+          p[12].to_f
+        )
       end
       material_name=p[-1]
       name=p[0]
-      thickness_i=p[7]
-      option_str=p[8].to_s
-      type_str=p[9].to_s
       v = new_pts[1] - new_pts[0]
       l = new_pts[3] - new_pts[0]
-      rayon=p[10]
-      largeur = v.length - 2 * rayon
-      longueur= l.length - 2 * rayon
+      largeur = v.length #- 2 * rayon
+      longueur= l.length #- 2 * rayon
       model = Sketchup.active_model
       if (type_str == "1")           #polycarbonate 
         profil  = profil_polycarbonate_15mm_epais(thickness_i,largeur)
@@ -1841,7 +1899,7 @@ module Auvent
           grp=profil_rectangulaire_extrude_dans_epaisseur(root,longueur,largeur,rayon,thickness_i,p[0])
           # Seuil en degrés : en dessous, on lisse
           #ANGLE_SEUIL = 30.degrees
-		  model.start_operation("edge smooth", true)
+          model.start_operation("edge smooth", true)
           grp.entities.grep(Sketchup::Edge) do |edge|
             faces = edge.faces
             # On ne lisse que les arêtes entre deux faces
@@ -1862,8 +1920,7 @@ module Auvent
           mat = @materials[material_name]
           UtilsAuvent.apply_material_stable(grp.entities,mat)
         else
-           profil  = profil_polycarbonate_15mm_epais(thickness_i,largeur)            #ca marche mais a revoir sans polycarbonate
-           extrude_panneau_polycarbonate(root, new_pts, profil, largeur, material_name,p[0])
+          extrude_panneau(root, new_pts,thickness_i,material_name,name)
         end
         #else
         #UI.messagebox("type #{type} non prévu pour PANNEAU")
@@ -1901,14 +1958,12 @@ module Auvent
       contour += gents.add_arc(c4, Geom::Vector3d.new(0,-1,0), Geom::Vector3d.new(0,0,1), r, 0, 90.degrees, 8).map { |e| e.end.position }
       # On force Z = 0 (SU2017 bug arcs)
       contour.map! { |p| Geom::Point3d.new(p.x, p.y, 0) }
-
       # Face
       face = gents.add_face(contour)
       face.pushpull(rayon)
-
-  grp
+      grp
     end
-	
+
     def self.piece_panneau_lambris(root, p)
       largeur=p[4]
       normal_sym      = p[6]
@@ -1943,7 +1998,7 @@ module Auvent
         entrouve_porte = Geom::Transformation.rotation(origin, Z_AXIS,  30.degrees)
         lambris_group.transform!(entrouve_porte)
       end
-      if(last_component_name=="AUVENT_GARAGE" && id_sym == :chapeau && lambris_group != nil)  #
+      if((last_component_name=="AUVENT_GARAGE" || last_component_name=="TEST_PORTE"  || last_component_name=="TEST_DOOR") && id_sym == :chapeau && lambris_group != nil)  #
         lames = lambris_group.entities.grep(Sketchup::Group)
         nb_lame=lames.length
         hauteur_chapeau=133.mm
@@ -1988,18 +2043,17 @@ module Auvent
     end
 
     def self.piece_angle_yz(root, p)
-      sx = p[1]
-      sy = p[2]
+      sy = p[1]
+      sz = p[2]
       x  = p[3]
       y  = p[4]
       z  = p[5]
       len = p[6]
-      # Nettoyage + conversion angle toiture → angle math
-      angle_toiture = p[7].to_s.gsub(',', '.').to_f
-      angle = (angle_toiture) * Math::PI / 180.0
+      angle_deg = p[7].to_s.gsub(',', '.').to_f
+      angle_rad = (angle_deg) * Math::PI / 180.0
       point_haut=p[8]
-      dy = len * Math.cos(angle)
-      dz = len * Math.sin(angle)
+      dy = len * Math.cos(angle_rad)
+      dz = len * Math.sin(angle_rad)
       dx = 0
       if(point_haut==0)
         new_y=y + dy
@@ -2016,7 +2070,38 @@ module Auvent
         Geom::Point3d.new(x + dx, new_y, new_z)
       )
       mat = p[-1]
-      extrude_piece(edge, sx, sy, mat)
+      extrude_piece(edge, sy, sz, mat)
+    end
+
+    def self.piece_angle_xz(root, p)
+      sy = p[1]
+      sz = p[2]
+      x  = p[3]
+      y  = p[4]
+      z  = p[5]
+      len = p[6]
+      angle_deg = p[7].to_s.gsub(',', '.').to_f
+      angle_rad = (angle_deg) * Math::PI / 180.0
+      point_haut=p[8]
+      dx = len * Math.cos(angle_rad)
+      dz = len * Math.sin(angle_rad)
+      dy = 0
+      if(point_haut==0)
+        new_x=x + dx
+        new_z=z + dz
+      else
+        new_x=x - dx
+        new_z=z - dz
+      end
+      g = root.entities.add_group
+      g.name=p[0]
+      g.layer = root.layer
+      edge = g.entities.add_line(
+        Geom::Point3d.new(x, y, z),
+        Geom::Point3d.new(new_x ,y + dy, new_z)
+      )
+      mat = p[-1]
+      extrude_piece(edge, sy, sz, mat)
     end
 
     def self.piece_chevron(root, p)
@@ -2072,17 +2157,17 @@ module Auvent
     def self.load_all_materials_from(folder_name = "materials")
       model = Sketchup.active_model
       mats  = model.materials
-      # Chemin absolu du dossier dans le plugin
+      # Absolute path to the folder within the plugin / Chemin absolu du dossier dans le plugin
       base = File.join(__dir__, folder_name)
       unless Dir.exist?(base)
-        UI.messagebox("Dossier matériaux introuvable : #{base}")
+        UI.messagebox("Materials folder not found / Dossier matériaux introuvable : #{base}")
         return {}
       end
-      puts("load matériel: #{folder_name}")
+      puts("Material loading / load matérial: #{folder_name}")
       loaded = {}
       Dir.glob(File.join(base, "*.skm")).each do |file|
         name = File.basename(file, ".skm")
-        # Déjà dans le modèle ?
+        #Already in the model /  Déjà dans le modèle ?
         mat = mats[name]
         if mat
           loaded[name] = mat
@@ -2093,7 +2178,7 @@ module Auvent
           mat = mats.load(file)
           loaded[name] = mat if mat
         rescue => e
-          puts "Erreur chargement matériau #{file} : #{e}"
+          puts "Material loading error / Erreur chargement matériau #{file} : #{e}"
         end
       end
       puts("-------------------------------------")
@@ -2111,7 +2196,10 @@ module Auvent
       return if material_name.nil?
       mats_hash = FctAuvent.materials
       mat = mats_hash[material_name]
-      return unless mat
+      if(mat == nil)
+        puts "materiel #{material_name} absent du dossier auvent/materialsAuvent"  
+        return
+      end
       # Nettoyage + orientation + matériau
       ents.grep(Sketchup::Face).each do |f|
         f.material = nil
@@ -2134,24 +2222,17 @@ module Auvent
       puts("generate_onduline")
       epaisseur = 1.mm
       profil, largeur = profil_onduline_epais(epaisseur)
-      z_values = profil.map { |p| p.z }
-      zmax = z_values.max + epaisseur
-      pts.map! do |pt|
-        Geom::Point3d.new(pt.x, pt.y, pt.z + zmax )   #+ dz  onduline et polycarbonate  rien pour fibrociment -dz/2 pour tuiles canal
-      end
       extrude_couverture_ondulée(root, pts, profil, largeur,material)
     end
 
     def self.generate_polycarbonate(root, pts,thickness_i,material,largeur=0,last_component_name=nil)
       longueur_toit = pts[0].distance(pts[1])
+      if(longueur_toit < largeur)
+        largeur=longueur_toit
+      end
       nb_panneau = (longueur_toit/largeur).floor
       largeur = longueur_toit/nb_panneau
       profil  = profil_polycarbonate_15mm_epais(thickness_i,largeur)
-      z_values = profil.map { |p| p.z }
-      zmax = z_values.max
-      pts.map! do |pt|
-        Geom::Point3d.new(pt.x, pt.y, pt.z + zmax )   #+ dz  onduline et polycarbonate  rien pour fibrociment -dz/2 pour tuiles canal
-      end
       extrude_couverture_ondulée(root, pts, profil, largeur,material,0,0)
     end
 
@@ -2159,15 +2240,6 @@ module Auvent
       hauteur = 50.mm
       n_ondes = 5
       profil = profil_fibrociment_epais(thickness_i,largeur,hauteur,n_ondes)
-      #ajout pour garage pourquoi cette différence ? a voir
-      if(last_component_name==nil)
-        z_values = profil.map { |p| p.z }
-        zmax = z_values.max
-        pts.map! do |pt|
-          Geom::Point3d.new(pt.x, pt.y, pt.z + zmax )
-        end
-      end
-      #fin ajout
       extrude_couverture_ondulée(root, pts, profil, largeur,material)
     end
 
@@ -2177,17 +2249,6 @@ module Auvent
       angle=120.degrees
       correction_x_fct_profil=50.mm
       profil = profil_tuiles_canal_epais(thickness_i,largeur,angle,segments)
-      if(last_component_name!=nil)
-        z_values = profil.map { |p| p.z }
-        zmax = z_values.max
-        pts.map! do |pt|
-          Geom::Point3d.new(pt.x, pt.y, pt.z - zmax / 2 )   #+ dz  onduline et polycarbonate  rien pour fibrociment -dz/2 pour tuiles canal
-        end
-      else      #ajout pour garage pourquoi cette différence ? a voir
-        pts.map! do |pt|
-          Geom::Point3d.new(pt.x, pt.y, pt.z + 120.mm )   #+ dz  onduline et polycarbonate  rien pour fibrociment -dz/2 pour tuiles canal
-        end
-      end
       extrude_couverture_ondulée(root, pts, profil, largeur,material,longueur,0,correction_x_fct_profil)
     end
 
@@ -2199,21 +2260,10 @@ module Auvent
       hauteur = 15.mm   #25.mm
       segments = 8
       profil = profil_tuiles_romanes_epais(thickness_i,plat,galbe,hauteur,segments)
-      z_values = profil.map { |p| p.z }
-      zmax = z_values.max
-      if(last_component_name!=nil)
-        pts.map! do |pt|
-          Geom::Point3d.new(pt.x, pt.y, pt.z + zmax / 4 )
-        end
-      else
-        pts.map! do |pt|
-          Geom::Point3d.new(pt.x, pt.y, pt.z + zmax + 5.cm  )      #ajout pour garage pourquoi cette différence ? a voir    
-        end
-      end
       extrude_couverture_ondulée(root, pts, profil, largeur,material,longueur)
     end
 
-    def self.generer_gouttiere(rive,root, layer_auvent,p)
+    def self.generer_goutiere(rive,root, layer_auvent,p)
       ep  =  2.mm
       mat = p[-1]
       d=p[1]
@@ -2223,35 +2273,36 @@ module Auvent
       edges_sorted = edges.sort_by { |e| -e.length }
       #  Prendre les 3 longueur(4 edges de chaque longueur)
       longueur_rive = edges_sorted[0].length
-      hauteur_rive = edges_sorted[4].length
-      epaisseur_rive = edges_sorted[8].length
+      hauteur_rive = edges_sorted[edges_sorted.length/3].length
+      epaisseur_rive = edges_sorted[edges_sorted.length/3*2].length
       # Groupe pour le profil
       model = Sketchup.active_model
       ents  = root.entities
       grp = ents.add_group
-      grp.name = "GOUTTIERE"
+      grp.name = p[0]
       grp.layer = root.layer   # hérite automatiquement du layer Auvent
       prof_ents = grp.entities
       #  Centre du profil : devant la rive (vers -X)
       base = edges_sorted[0].start.position
       radius_ext = d / 2
       radius_int = radius_ext - ep
-      center = base.offset(Geom::Vector3d.new(0, -(radius_ext + epaisseur_rive), -hauteur_rive/2)) 
+      new_center=edges_sorted[7].start.position
+      new_center=Geom::Point3d.new(new_center.x,new_center.y-radius_ext-epaisseur_rive-10.mm, new_center.z-hauteur_rive/3)
       # Profil demi-cercle dans XY
       segments = 16
       pts_ext = []
       (0..segments).each do |i|
         angle = Math::PI * i / segments
-        y = center.y + radius_ext * Math.cos(angle)
-        z = center.z - radius_ext * Math.sin(angle)
-        pts_ext << Geom::Point3d.new(center.x, y, z)
+        y = new_center.y + radius_ext * Math.cos(angle)
+        z = new_center.z - radius_ext * Math.sin(angle)
+        pts_ext << Geom::Point3d.new(new_center.x, y, z)
       end
       pts_int = []
       (segments).downto(0) do |i|
         angle = Math::PI * i / segments
-        y = center.y + radius_int * Math.cos(angle)
-        z = center.z - radius_int * Math.sin(angle)
-        pts_int << Geom::Point3d.new(center.x, y, z)  #-30.mm
+        y = new_center.y + radius_int * Math.cos(angle)
+        z = new_center.z - radius_int * Math.sin(angle)
+        pts_int << Geom::Point3d.new(new_center.x, y, z)  #-30.mm
       end
       if(last_component_name=="AUVENT_GARAGE")
         delete_rive(ents)        #La goutière est fixée sur le fibrociment.
@@ -2270,26 +2321,12 @@ module Auvent
       last_point_end.x += longueur
       closer = prof_ents.add_line(first_point_start, last_point_start)
       closer.find_faces
-      closer = prof_ents.add_line(first_point_end, last_point_end)
+      #-0.001 pour ne pas fermer le dessus qui n'est plus coplanaire
+      new_last_point_end=Geom::Point3d.new(last_point_end.x,last_point_end.y,last_point_end.z-0.001)
+      closer = prof_ents.add_line(first_point_end, new_last_point_end)
       closer.find_faces
       grp.material      = mat
       grp
-    end
-
-    def self.generer_rives_completes
-      model = Sketchup.active_model
-      ents  = model.active_entities
-      group = ents.grep(Sketchup::Group).last
-      return unless group
-      gents = group.entities
-      chevrons = gents.grep(Sketchup::Group).select { |g| g.name == "CHEVRON" }
-      return if chevrons.empty?
-      left  = chevrons.min_by { |g| g.bounds.min.x }
-      right = chevrons.max_by { |g| g.bounds.max.x }
-      [left, right].each do |ch|
-        generer_planche_de_rive(ch)
-        generer_gouttiere(ch)
-      end
     end
 
     def self.generer_tuiles
@@ -2346,14 +2383,10 @@ module Auvent
       return unless group.is_a?(Sketchup::Group)
       gents = group.entities
       edges = gents.grep(Sketchup::Edge)
-      chevrons = gents.grep(Sketchup::Group).select { |g| g.name == "CHEVRON" }
-      return if chevrons.empty?
-      # Détection extrémités en X
-      left  = chevrons.min_by { |g| g.bounds.min.x }
-      right = chevrons.max_by { |g| g.bounds.max.x }
-        #Trouver le chevron le plus bas
-      chevron_bas = chevrons.min_by { |g| g.bounds.min.z }
-      generer_rive_basse(chevron_bas, left, right,root, layer_auvent,p)
+      liteaux = gents.grep(Sketchup::Group).select { |g| g.name == "LITEAU" || g.name == "BATTEN"}
+      return if liteaux.empty?
+      liteau_bas  = liteaux.min_by { |g| g.bounds.min.y }
+      generer_rive_basse(liteau_bas,root, layer_auvent,p)
     end
 
     def self.generer_rive_haute(chevron, sx, sy, mat)
@@ -2363,159 +2396,140 @@ module Auvent
       extrude_piece(edge, sx, sy, mat)
     end
 
-    def self.generer_rive_basse(chevron, left, right,parent, layer_auvent,p)
-      sx=p[1]
-      sy=p[2]
+    def self.generer_rive_basse(liteau,parent, layer_auvent,p)
+      sxy=p[1]
+      sz=p[2]
       mat=p[-1]
-      edges = chevron.entities.grep(Sketchup::Edge)
-      edges_sorted = edges.sort_by { |e| -e.length }
-      # — Prendre les 3 longueur(4 edges de chaque longueur)
-      longueur_rive = edges_sorted[0].length
-      haut_chevron = edges_sorted[4].length
-      ep_chevron = edges_sorted[8].length
-      #  Arête basse = position
-      edge_base = edges.min_by { |e| e.bounds.center.z }
-      return unless edge_base
+      edges = liteau.entities.grep(Sketchup::Edge)
+      edges_max_length=UtilsAuvent.long_edges_of(edges)
+      edges_min_y=UtilsAuvent.edges_with_lowest_y(edges_max_length)
+      edge_ok=UtilsAuvent.edge_with_highest_z(edges_min_y)
+      longueur_rive = edge_ok.length
+      haut_liteau = edge_ok.start.position.z
       # Position globale
-      tr = chevron.transformation
-      origin = edge_base.start.position.transform(tr)
-      # Longueur = distance entre chevrons extrêmes
-      longueur = (right.bounds.center.x - left.bounds.center.x + ep_chevron).abs
+      tr = liteau.transformation
+      origin = edge_ok.start.position.transform(tr)
       # Création du groupe rive
       ents  = parent.entities
       group = ents.add_group
       group.name=p[0]
-      group.layer = parent.layer   # sécurité
+      group.layer = parent.layer
       gents = group.entities
       # Profil vertical
-      v_down = Geom::Vector3d.new(0,0,-1)
-      v_x    = Geom::Vector3d.new(1,0,0)
-      p1 = origin.offset(v_x, 0)  #en x-60.mm
-      p2 = p1.offset(v_down, sy)
-      p3 = p2.offset(v_x, sx)
-      p4 = p1.offset(v_x, sx)
+      pts=profil_rives(sxy,sz,origin)
       #  Transformation à appliquer AVANT création de la face
-      pivot = p2
+      pivot = pts[2]   #p2
       tr_rot = Geom::Transformation.rotation(
-      pivot,
-      Geom::Vector3d.new(0,0,1),
-      90.degrees
+        pivot,
+        Geom::Vector3d.new(0,0,1),
+        90.degrees
       )
       if(last_component_name=="AUVENT_GARAGE")
         longueur += 2 * (280.mm+150.mm)-80.mm      #debord chevrons(liteaux dans ce cas)+debord couverture
         tr_offset = Geom::Transformation.translation(
-          Geom::Vector3d.new(-280.mm-80.mm-150.mm, -sx, sy + haut_chevron )
+          Geom::Vector3d.new(-280.mm-80.mm-150.mm, -sxy, sz + haut_liteau )
         )
       else
         tr_offset = Geom::Transformation.translation(
-          Geom::Vector3d.new(0, -sx, sy + haut_chevron - 170.mm)    #
+          Geom::Vector3d.new(longueur_rive, -sxy, -10.mm )    #-10.mm pour ne pas dépasser du liteau avec la pente
         )
       end
-      # Appliquer transformation aux 4 points
-      p1t = p1.transform(tr_rot).transform(tr_offset)
-      p2t = p2.transform(tr_rot).transform(tr_offset)
-      p3t = p3.transform(tr_rot).transform(tr_offset)
-      p4t = p4.transform(tr_rot).transform(tr_offset)
+      # Appliquer transformation aux profil
+      pts = pts.map { |p| p.transform(tr_rot).transform(tr_offset) }
       # Créer la face dans le bon repère
-      face = gents.add_face(p1t, p2t, p3t, p4t)
+      face = gents.add_face(pts)
       # Extrusion dans le bon repère
-      face.pushpull(longueur)
+      face.pushpull(longueur_rive)
       # Matériau
       group.material = mat
-      group.name = "RIVE_BASSE"
+      group.name = p[0]
       group.layer = parent.layer
       group
     end
 
-    def self.generate_liteaux_sur_chevrons(parent, nb_liteaux = 3, section = [30.mm, 30.mm],material_name=nil)    #parent, section, entraxe
+    def self.generate_liteaux_sur_chevrons(parent,p)
+      name=p[0]
+      nb_liteaux=p[1]
+      material_name=p[-1]
       ents = parent.entities
-      # --- Récupération des chevrons ---
-      chevrons = ents.select { |e| e.is_a?(Sketchup::Group) && e.name == "CHEVRON" }
-      return if chevrons.length < 2
-      # --- Chevron de référence ---
-      chevron_ref = chevrons.first
-      edge_ref = UtilsAuvent.axis_edge_of(chevron_ref)
-      cotes_chevron=section_chevron(chevron_ref)
-      hauteur_chevron=cotes_chevron[:hauteur].mm
-      largeur_chevron=cotes_chevron[:largeur].mm
-      longueur_chevron=cotes_chevron[:longueur].mm
-      # Points du chevron en MONDE
-      p1 = chevron_ref.transformation * edge_ref.start.position
-      p2 = chevron_ref.transformation * edge_ref.end.position
-      # --- Direction du chevron (dans YZ, pente) ---
-      dir_chevron = (p2 - p1)
-      dir_chevron.length = 1.0
-      # --- Direction du liteau = X global (perpendiculaire aux chevrons) ---
-      dir_liteau = Geom::Vector3d.new(1, 0, 0)
-        # --- Normale du toit = chevron × liteau ---
-      normal_toit = dir_chevron * dir_liteau
-      normal_toit.length = 1.0
-      normal_toit.reverse! if normal_toit.z < 0  # on force vers Z+
-      def self.x_center(g)
-        bb = g.bounds
-        (bb.min.x + bb.max.x) / 2.0
-      end
-      g1 = chevrons.min_by { |g| x_center(g) }
-      g2 = chevrons.max_by { |g| x_center(g) }
-      offset_dist = hauteur_chevron
-      positions = []
-      if(last_component_name=="AUVENT_GARAGE")
-        depassement = 280.mm
-        len_liteau = largeur_chevron + (x_center(g2) - x_center(g1)).abs
-        return if len_liteau <= 0.1.mm
-        len_liteau += depassement * 2
-        offset_dist -= hauteur_chevron
-        base = p1.offset(normal_toit, offset_dist)
-        (0...nb_liteaux).each do |i|
-          positions << ((longueur_chevron-section[1]-230.mm) * (i.to_f / (nb_liteaux - 1))+230.mm)  #20mm corriger avec la pente dû à la coupe
-        end
+      if(nb_liteaux<2)
+        new_p=[-1..9]
+        new_p[0]=p[0]
+        new_p[1]=p[2]    #suprime nombre
+        new_p[2]=p[3]
+        new_p[3]=p[4]
+        new_p[4]=p[5]
+        new_p[5]=p[6]
+        new_p[6]=p[7]
+        new_p[7]=p[8]
+        new_p[8]=p[9]
+        new_p[9]=p[9]
+        new_p[-1]=p[-1]
+        g=piece_xy(parent, new_p)
+        apply_material(g.entities, material_name) if material_name
       else
-        len_liteau = largeur_chevron + (x_center(g2) - x_center(g1)).abs
-        return if len_liteau <= 0.1.mm
-        base = p1.offset(normal_toit, offset_dist)
+        depassement=0   #100.mm
+        section_y=p[2]
+        section_z=p[3]
+        
+        # --- Récupération des chevrons ---
+        chevrons = ents.select { |e| e.is_a?(Sketchup::Group) && e.name == "CHEVRON" || e.name == "RAFTER"}
+        return if chevrons.length < 2
+        # 1 - ordonner les 3 chevrons suivant X
+        chevrons_sorted = chevrons.sort_by { |g| g.bounds.min.x }
+        chevron_gauche=chevrons_sorted.first
+        chevron_droit=chevrons_sorted.last
+        # --- recherche des bords des chevrons extremesextrêmes 
+        edges_G = chevron_gauche.entities.grep(Sketchup::Edge)
+        edges_D= chevron_droit.entities.grep(Sketchup::Edge)
+        edges_G = UtilsAuvent.long_edges_of(edges_G)   #chevron gauche il faut edge lmax
+        edges_D = UtilsAuvent.long_edges_of(edges_D)  #chevron droit il faut edge lmax
+        edges_G = UtilsAuvent.edges_with_lowest_x(edges_G)   #chevron gauche il faut edge min x
+        edges_D = UtilsAuvent.edges_with_highest_x(edges_D)  #chevron droit il faut edge  max x
+        edge_G = UtilsAuvent.edge_with_highest_z(edges_G)  #chevron gauche il faut edge zmax
+        edge_D = UtilsAuvent.edge_with_highest_z(edges_D)  #chevron droit il faut edge zmax
+        positions_y = []
+        positions_z = []
+        if(last_component_name=="AUVENT_GARAGE")
+          depassement = 280.mm   #des 2 cotés
+        end
+        point_min = [edge_D.start.position, edge_D.end.position].min_by { |p| p.z }    #point bas pour calcul positions_y en y croissant
+        point_max = [edge_D.start.position, edge_D.end.position].max_by { |p| p.z }    #point haut pour calcul positions_z en z croissant
+        longueur_horizontal_chevron=point_max.y-point_min.y           #edge_G.start.y.distance(edge_G.end.y)
+        longueur_vertical_chevron=point_max.z-point_min.z
         # --- Calcul des positions des liteaux selon nb_liteaux ---
         (0...nb_liteaux).each do |i|
-          positions << ((longueur_chevron-section[1]) * (i.to_f / (nb_liteaux - 1))+section[1]-20.mm)  #20mm corriger avec la pente dû à la coupe
+          positions_y << point_min.y + ((longueur_horizontal_chevron-section_y) * (i.to_f / (nb_liteaux - 1))+section_y)   #-20.mm
+          positions_z << point_min.z + ((longueur_vertical_chevron) * (i.to_f / (nb_liteaux - 1)))
         end
-      end
-      nb_liteaux.times do |i|
-        pos = base.offset(dir_chevron, positions[i])
-        # lignes décalage liteau vers -x de ep_chevron
-        v_back = dir_liteau.clone
-        v_back.reverse!
-        #add this line for barbec
-        #pos = pos.offset(v_back, 590.mm)
-        # section dans YZ local
-        p0s = Geom::Point3d.new(0, 0, 0)
-        p1s = Geom::Point3d.new(0, section[1], 0)
-        p2s = Geom::Point3d.new(0, section[1], section[0])
-        p3s = Geom::Point3d.new(0, 0, section[0])
-        # Transformation à appliquer AVANT création
-        xaxis = dir_liteau      # longueur du liteau (X)
-        yaxis = dir_chevron     # le long du chevron
-        zaxis = normal_toit     # vers l’extérieur du toit
-        if(last_component_name=="AUVENT_GARAGE")
-          v_dep = dir_liteau.clone
-          v_dep.length = depassement+80.mm   #section chevron
-          pos -= v_dep
+        nb_liteaux.times do |i|
+          new_p=[-1..9]
+          new_p[0]=p[0]                            #name
+          new_p[1]=p[2]                            #section y   suprime nombre
+          new_p[2]=p[3]                            #section z
+          new_p[3]=edge_G.start.position.x - depassement        #x1
+          new_p[4]=positions_y[i] - section_y / 2  #y1
+          new_p[5]=positions_z[i] + section_z / 2  #z1
+          pivot_y=new_p[4]
+          if(i==(nb_liteaux-1))
+            pivot_y += (section_y / 2)
+          elsif(i==0)
+            pivot_y -= (section_y / 2)
+          end
+          pivot_z=new_p[5] - (section_z / 2)
+          new_p[6]=edge_D.start.position.x + depassement       #x2
+          new_p[7]=positions_y[i] - section_y / 2  #y2
+          new_p[8]=positions_z[i] + section_z / 2  #z2
+          new_p[9]=p[9]                            #sinon p[-1] écrase le dernier
+          new_p[-1]=p[-1]                          #matériel
+          g=piece_xy(parent, new_p)
+          pente_rad = Math.atan2(longueur_vertical_chevron, longueur_horizontal_chevron)
+          pt_ref=Geom::Point3d.new(new_p[3], pivot_y, pivot_z)
+          tr_rot = Geom::Transformation.rotation(pt_ref,X_AXIS, pente_rad )  
+          g.transform!(tr_rot)
+          g.set_attribute("auvent", "tr", g.transformation.to_a)
+          apply_material(g.entities,material_name)
         end
-        tr = Geom::Transformation.axes(pos, xaxis, yaxis, zaxis)
-        #Appliquer transformation aux points
-        p1t = p0s.transform(tr)
-        p2t = p1s.transform(tr)
-        p3t = p2s.transform(tr)
-        p4t = p3s.transform(tr)
-        # Créer le groupe SANS transformation
-        g = parent.entities.add_group
-        gents = g.entities
-        g.name = "LITEAU"                     # a voir
-        g.layer = parent.layer
-        # Créer la face dans le bon repère
-        face = gents.add_face(p1t, p2t, p3t, p4t)
-        # Extrusion dans le bon repère
-        face.pushpull(len_liteau)
-        g.set_attribute("auvent", "tr", g.transformation.to_a)
-        apply_material(g.entities,material_name,dir_liteau)
       end
     end
 
@@ -2613,10 +2627,10 @@ module Auvent
       [edge1, edge2]
     end
 
-    def self.generer_gouttieres(root, layer_auvent, p)
+    def self.generer_goutieres(root, layer_auvent, p)
       rive = trouver_rives_basses(root)
       return unless rive
-      generer_gouttiere(rive,root, layer_auvent,p)
+      generer_goutiere(rive,root, layer_auvent,p)
     end
 
     def self.genere_profils_lamelles(pts_profil_lambris_world,nb_lamelle_par_lame,debug)
@@ -2708,84 +2722,113 @@ module Auvent
       end
       end
 
-    def self.generate_chevrons_sur_poutres(parent, nb_chevrons = 3, section = [35.mm, 70.mm], dep_y = 0.mm, material_name = nil)
-      ents = parent.entities
-      # --- Récupérer les poutres ---
-      poutres = ents.grep(Sketchup::Group).select { |g| g.name == "POUTRE" }
-      return if poutres.length < 2
-      # --- Direction horizontale de la poutre ---
-      edge_ref = UtilsAuvent.long_edge_of(poutres.first)
-      p1 = edge_ref.start.position
-      p2 = edge_ref.end.position
-      dir_poutre = (p2 - p1)
-      dir_poutre.z = 0
-      dir_poutre.length = 1.0
-      # --- Direction horizontale perpendiculaire (base du chevron) ---
-      dir_horiz = Geom::Vector3d.new(-dir_poutre.y, dir_poutre.x, 0)
-      dir_horiz.length = 1.0
-      # --- Trier les poutres selon dir_horiz ---
-      proj = ->(g) {
-        g.bounds.center.to_a.zip(dir_horiz.to_a).map { |a,b| a*b }.inject(0, :+)
-      }
-      poutres_sorted = poutres.sort_by { |g| proj.call(g) }
-      poutre_avant = poutres_sorted.first
-      poutre_arriere = poutres_sorted.last
-      # --- Points extrêmes pour calculer la pente réelle ---
-      edge_Av = UtilsAuvent.long_edge_of(poutre_avant)   #Gauche avant
-      edge_Ar = UtilsAuvent.long_edge_of(poutre_arriere)
-      edge_short_Av=UtilsAuvent.short_edge_of(poutre_avant).length
-      edge_short_Ar=UtilsAuvent.short_edge_of(poutre_arriere).length
-      delta=(edge_short_Ar-edge_short_Av)/2
-      pG = edge_Av.start.position
-      pD = edge_Ar.start.position
-      # --- Calcul de la pente réelle ---
-      dz = (pD.z - pG.z)   #+45.mm
-      dx = (pD - pG).length
-      dy = pD.y-pG.y + edge_short_Ar  #
-      pente_rad = Math.atan2(dz, dy)   #angles extérieures et supérieurs
-      # --- Direction inclinée du chevron ---
-      dir_chevron = Geom::Vector3d.new(dir_horiz.x, dir_horiz.y, Math.tan(pente_rad))
-      dir_chevron.length = 1.0
-      # --- Verticale locale ---
-      dir_z = dir_chevron * dir_poutre
-      dir_z.length = 1.0
-      # --- Longueur du chevron (distance entre poutres) ---
-      #distance horizontal d'axe à axe
-      distance_horizontal = (proj.call(poutre_arriere) + proj.call(poutre_avant)).abs
-      distance_horizontal+=(dep_y + delta-40.mm)      #-74.mm)
-      # --- Longueur de la poutre (pour répartir les chevrons) ---
-      edge_long = UtilsAuvent.long_edge_of(poutre_avant)
-      len_poutre = edge_long.length
-      # --- Positions des chevrons le long de la poutre ---
-      positions = []
-      (0..(nb_chevrons - 1)).each do |i|
-        positions << ((len_poutre - section[1] ) * i.to_f / (nb_chevrons - 1))    #60.mm
-      end
-      positions.each do |dist|
-        # Position le long de la poutre
-        vprog = dir_poutre.clone
-        vprog.length = dist
-        pos = p1.offset(vprog)
-        # Centrage sur l'épaisseur
-        v_center = dir_horiz.clone
-        pos += v_center
-        # --- Création du groupe CHEVRON ---
+    def self.generate_chevrons_sur_poutres(parent, p)
+      nb_chevrons=p[1]
+      material_name=p[-1]
+      section_x= p[2]
+      section_z= p[3]
+      dep_y= p[4]
+      name=p[0]
+      if(nb_chevrons<2)
+        x1=p[5]
+        y1=p[6]
+        z1=p[7]
+        x2=p[8]
+        y2=p[9]
+        z2=p[10]
+        dy=(y2-y1).abs
+        dz=(z2-z1).abs
+        pente_rad = Math.atan2(dz, dy)   #angles extérieures et supérieurs
+        pAv=Geom::Point3d.new(x1-section_x/2,y1,z1-section_z/2)
+        pAr=Geom::Point3d.new(x2-section_x/2,y2,z2-section_z/2)
         g = creer_chevron(
-        parent,
-        distance_horizontal,
-        section[0],
-        section[1],
-        pente_rad,
-        dep_y,
-        pos.x ,
-        pG.z )  #pos.z
-        apply_material(g.entities, material_name, dir_chevron) if material_name
+          parent,
+          dy,                          #distance_horizontal,
+          section_x,
+          section_z,
+          pente_rad,
+          dep_y,
+          x1-section_x/2 ,
+          pAv ,
+          pAr ,
+          name ,
+          0)
+          apply_material(g.entities, material_name) if material_name
+      elsif(nb_chevrons>1)
+        ents = parent.entities
+        # --- Récupérer les poutres ---
+        poutres = ents.grep(Sketchup::Group).select { |g| g.name == "POUTRE" || g.name == "BEAM"}
+        return if poutres.length < 2
+        # --- Direction horizontale de la poutre ---
+        edge_ref = UtilsAuvent.long_edge_of(poutres.first)
+        p1 = edge_ref.start.position
+        p2 = edge_ref.end.position
+        dir_poutre = (p2 - p1)
+        dir_poutre.z = 0
+        dir_poutre.length = 1.0
+        # --- Direction horizontale perpendiculaire (base du chevron) ---
+        dir_horiz = Geom::Vector3d.new(-dir_poutre.y, dir_poutre.x, 0)
+        dir_horiz.length = 1.0
+        # --- Trier les poutres selon dir_horiz ---
+        proj = ->(g) {
+          g.bounds.center.to_a.zip(dir_horiz.to_a).map { |a,b| a*b }.inject(0, :+)
+        }
+        poutres_sorted = poutres.sort_by { |g| proj.call(g) }
+        poutre_avant = poutres_sorted.first
+        poutre_arriere = poutres_sorted.last
+        # --- Points extrêmes pour calculer la pente réelle 
+        edges_Av = poutre_avant.entities.grep(Sketchup::Edge)
+        edges_Ar= poutre_arriere.entities.grep(Sketchup::Edge)
+        edges_Av = UtilsAuvent.long_edges_of(edges_Av)   #poutre basse avant il faut edge lmax
+        edges_Ar = UtilsAuvent.long_edges_of(edges_Ar)  #poutre haute arrière il faut edge lmax
+        edges_Av = UtilsAuvent.edges_with_lowest_y(edges_Av)   #poutre basse avant il faut edge min y
+        edges_Ar = UtilsAuvent.edges_with_highest_y(edges_Ar)  #poutre haute arrière il faut edge max y
+        edge_Av = UtilsAuvent.edge_with_highest_z(edges_Av)  #poutre haute arrière il faut edge zmax
+        edge_Ar = UtilsAuvent.edge_with_highest_z(edges_Ar)  #poutre haute arrière il faut edge zmax
+        pAv = edge_Av.start.position
+        pAr = edge_Ar.start.position
+        # --- Calcul de la pente réelle ---
+        dz = (pAr.z - pAv.z)   #+45.mm
+        #dx = (pAr.x - pAv.x)   #(pAr - pAv).length
+        dy = pAr.y-pAv.y ####+ edge_short_Ar  #
+        pente_rad = Math.atan2(dz, dy)   #angles extérieures et supérieurs
+        # --- Longueur de la poutre (pour répartir les chevrons) ---
+        edge_long = UtilsAuvent.long_edge_of(poutre_avant)
+        len_poutre = edge_long.length
+        # --- Positions des chevrons le long de la poutre ---
+        positions = []
+        (0..(nb_chevrons - 1)).each do |i|
+          positions << ((len_poutre - section_x ) * i.to_f / (nb_chevrons - 1))
+        end
+        positions.each do |dist|
+          # Position le long de la poutre
+          vprog = dir_poutre.clone
+          vprog.length = dist
+          pos = p1.offset(vprog)
+          # Centrage sur l'épaisseur
+          v_center = dir_horiz.clone
+          pos += v_center
+          # --- Création du groupe CHEVRON ---
+          g = creer_chevron(
+          parent,
+          dy,                          #distance_horizontal,
+          section_x,
+          section_z,
+          pente_rad,
+          dep_y,
+          pos.x ,
+          pAv ,
+          pAr ,
+          name ,
+          20.mm)
+          apply_material(g.entities, material_name) if material_name
+        end
       end
     end
 
     def self.get_chevrons_group(ossature_group)
       chevrons = ossature_group.entities.grep(Sketchup::Group).select { |g|
-        g.name.include?("CHEVRON")
+        g.name.include?("CHEVRON") || g.name.include?("RAFTER")
       }
       return chevrons
     end
@@ -2838,7 +2881,7 @@ module Auvent
       puts "DEBUG type = #{type.inspect}"
       raw_values = parts[1..-1].map { |p| UtilsAuvent.eval_expr(p, vars) }
       case type
-        when "LAMBRIS","CLINS"
+        when "LAMBRIS","CLINS","PANELING" ,"CLADDING"
           # On NE passe PAS direction/orientation dans eval_expr
           x         = UtilsAuvent.eval_expr(parts[1], vars).mm
           y         = UtilsAuvent.eval_expr(parts[2], vars).mm
@@ -2854,8 +2897,6 @@ module Auvent
           pieces << [type, x, y, z, largeur, hauteur, direction, orientation, pas, epaisseur,delta_hauteur,id , material]
         next
         when "CUTTER"
-           #CUTTER;x1;y1;z1;x2;y2;z2;x3;y3;z3;x4;y4;z4;direction;objet
-           #4 point + 1 direction, supprime la partie vers direction;objet= clin,lambris...
           x1         = UtilsAuvent.eval_expr(parts[1], vars).mm
           y1         = UtilsAuvent.eval_expr(parts[2], vars).mm
           z1         = UtilsAuvent.eval_expr(parts[3], vars).mm
@@ -2872,28 +2913,40 @@ module Auvent
           id   = parts[14].to_s.strip.downcase.to_sym
           pieces << [type, x1, y1, z1, x2, y2, z2, x3, y3, z3, x4, y4, z4, direction,id]
         next
-        when "PANNEAU"
-           #PANNEAU;x1;y1;z1;x2;y2;z2;epaisseur;option;type;rayon;MAT=xxx   option:1 angles arrondis de rayon  type 1:polycarbonate  type 2:panneau plein
+        when "PANNEAU","DESSUS","PANEL","TOP"
           x1         = UtilsAuvent.eval_expr(parts[1], vars).mm
           y1         = UtilsAuvent.eval_expr(parts[2], vars).mm
           z1         = UtilsAuvent.eval_expr(parts[3], vars).mm
           x2         = UtilsAuvent.eval_expr(parts[4], vars).mm
           y2         = UtilsAuvent.eval_expr(parts[5], vars).mm
           z2         = UtilsAuvent.eval_expr(parts[6], vars).mm
-          epaisseur  = UtilsAuvent.eval_expr(parts[7], vars).mm
-          option     = parts[8].to_s.strip.downcase.to_sym
-          le_type       = parts[9].to_s.strip.downcase.to_sym
-          if (parts[10] != nil)   #pour versions précédentes sans rayon
-            rayon      = UtilsAuvent.eval_expr(parts[10], vars).mm
-            pieces << [type, x1, y1, z1, x2, y2, z2, epaisseur, option, le_type, rayon, material]
+          if(parts.length < 12)
+            epaisseur  = UtilsAuvent.eval_expr(parts[7], vars).mm
+            option     = parts[8].to_s.strip.downcase.to_sym
+            le_type       = parts[9].to_s.strip.downcase.to_sym
+            if (parts[10] != nil)   #pour versions précédentes sans rayon
+              rayon      = UtilsAuvent.eval_expr(parts[10], vars).mm
+              pieces << [type, x1, y1, z1, x2, y2, z2, epaisseur, option, le_type, rayon, material]
+            else
+              pieces << [type, x1, y1, z1, x2, y2, z2, epaisseur, option, le_type, 0,material]
+            end
           else
-            pieces << [type, x1, y1, z1, x2, y2, z2, epaisseur, option, le_type, 0,material]
+            x3         = UtilsAuvent.eval_expr(parts[7], vars).mm
+            y3         = UtilsAuvent.eval_expr(parts[8], vars).mm
+            z3         = UtilsAuvent.eval_expr(parts[9], vars).mm
+            x4         = UtilsAuvent.eval_expr(parts[10], vars).mm
+            y4         = UtilsAuvent.eval_expr(parts[11], vars).mm
+            z4         = UtilsAuvent.eval_expr(parts[12], vars).mm
+            epaisseur  = UtilsAuvent.eval_expr(parts[13], vars).mm
+            option     = parts[14].to_s.strip.downcase.to_sym
+            le_type       = parts[15].to_s.strip.downcase.to_sym
+            rayon      = UtilsAuvent.eval_expr(parts[16], vars).mm
+            pieces << [type, x1, y1, z1, x2, y2, z2, x3, y3, z3, x4, y4, z4, epaisseur, option, le_type, rayon,material]
           end
         next
-        when "XY"
-           #XY;section_x;section_y;x1;y1;z1;x2;y2;z2;option;MAT=xxx         option 3 chanfrein + moulure en V
-          sx         = UtilsAuvent.eval_expr(parts[1], vars).mm   
-          sy         = UtilsAuvent.eval_expr(parts[2], vars).mm   		  
+        when "XY","TRAVERSE","MONTANT","RAIL","UPRIGHT"
+          sx         = UtilsAuvent.eval_expr(parts[1], vars).mm
+          sy         = UtilsAuvent.eval_expr(parts[2], vars).mm
           x1         = UtilsAuvent.eval_expr(parts[3], vars).mm
           y1         = UtilsAuvent.eval_expr(parts[4], vars).mm
           z1         = UtilsAuvent.eval_expr(parts[5], vars).mm
@@ -2906,19 +2959,39 @@ module Auvent
       end
       values = parts[1..-1].map { |p| UtilsAuvent.eval_expr(p, vars) }
       case type
-        when "LITEAU"
+        when "LITEAU","BATTEN"
           values = [
             raw_values[0],          # nombre → pas en mm
-            raw_values[1].mm,       # section X
-            raw_values[2].mm,       # section Y
+            raw_values[1].mm,       # section Y
+            raw_values[2].mm,       # section Z
           ]
-        when "CHEVRON"
+            if(raw_values.length>5)
+              values[3]=raw_values[3].mm   # x1
+              values[4]=raw_values[4].mm   # y1
+              values[5]=raw_values[5].mm   # z1
+              values[6]=raw_values[6].mm   # x2
+              values[7]=raw_values[7].mm   # y2
+              values[8]=raw_values[8].mm   # z2
+              values[9]=raw_values[8].mm  # bidon sinon écrasement de values[9] par la ligne suivante
+              values[-1]=material
+            end
+        when "CHEVRON","RAFTER"
           values = [
             raw_values[0],      # nombre
             raw_values[1].mm,   # section X
-            raw_values[2].mm,   # section Y
+            raw_values[2].mm,   # section Z
             raw_values[3].mm,   # dépassement
           ]
+          if(raw_values.length>5)
+            values[4]=raw_values[4].mm   # x1
+            values[5]=raw_values[5].mm   # y1
+            values[6]=raw_values[6].mm   # z1
+            values[7]=raw_values[7].mm   # x2
+            values[8]=raw_values[8].mm   # y2
+            values[9]=raw_values[9].mm   # z2
+            values[10]=raw_values[9].mm  # bidon sinon écrasement de values[9] par la ligne suivante
+            values[-1]=material
+          end
         else
           # par défaut : tout en mm
           values = raw_values.map { |v| v.mm }
@@ -2929,37 +3002,9 @@ module Auvent
       { pieces: pieces, vars: vars }
     end
 
-    def self.debug_chevron(chevron)
-      puts "=============================="
-      puts "   DEBUG CHEVRON : #{chevron.name}"
-      puts "=============================="
-      bb = chevron.bounds
-      puts "Bounds:"
-      puts "  min: #{bb.min}"
-      puts "  max: #{bb.max}"
-      puts "  center: #{bb.center}"
-      # Arêtes
-      edges = chevron.entities.grep(Sketchup::Edge)
-      puts "Nombre d'arêtes : #{edges.length}"
-      # Arête la plus haute
-      top_edge = edges.max_by { |e| e.bounds.center.z }
-      puts "Arête haute : #{top_edge.start.position} -> #{top_edge.end.position}"
-      # Arête la plus basse
-      bottom_edge = edges.min_by { |e| e.bounds.center.z }
-      puts "Arête basse : #{bottom_edge.start.position} -> #{bottom_edge.end.position}"
-      # Highlight visuel (optionnel)
-      begin
-      chevron.material = "red"   # ??
-      puts "Chevron coloré en rouge pour debug."
-      rescue
-      puts "Impossible de colorer le chevron."
-      end
-      puts "=============================="
-    end
-
     def self.trouver_rives_basses(root)
       return nil unless root.is_a?(Sketchup::Group)
-      rives_basses = root.entities.grep(Sketchup::Group).find { |g| g.name == "RIVE_BASSE"  && g.valid? }
+      rives_basses = root.entities.grep(Sketchup::Group).find { |g| (g.name == "RIVES" || g.name == "FASCIA") && g.valid? }
     end
 
     def self.get_chevron_faces(chevron_group)
@@ -2989,40 +3034,14 @@ module Auvent
     end
 
     def self.plan_depuis_chevron(chevron_group)
-      #  Récupérer toutes les faces du chevron (récursif)
-      faces = []
-      stack = [chevron_group]
-      until stack.empty?
-        g = stack.pop
-        g.entities.each do |e|
-          if e.is_a?(Sketchup::Face)
-            faces << e
-          elsif e.is_a?(Sketchup::Group) || e.is_a?(Sketchup::ComponentInstance)
-            stack << e
-          end
-        end
+      if (chevron_group==nil)
+        return
       end
-      #  Filtrer les faces inclinées (ni horizontales ni verticales)
-      inclined = faces.select { |f|
-        nz = f.normal.z
-        nz.abs > 0.01 && nz.abs < 0.99
-      }
-      return nil if inclined.empty?
-      #  Face du dessus = inclinée avec la plus grande moyenne de Z
-      top_face = inclined.max_by do |f|
-        verts = f.vertices.map(&:position)
-        sum_z = verts.inject(0.0) { |s, p| s + p.z }
-        sum_z / verts.length.to_f
+      bottom_face=UtilsAuvent.face_du_dessous(chevron_group)
+      if (bottom_face==nil)
+        return
       end
-      # Faces parallèles à la face du dessus
-      parallel = faces.select { |f| f.normal.parallel?(top_face.normal) }
-      #  Face du dessous = parallèle avec la plus petite moyenne de Z
-      bottom_face = parallel.min_by do |f|
-        verts = f.vertices.map(&:position)
-        sum_z = verts.inject(0.0) { |s, p| s + p.z }
-        sum_z / verts.length.to_f
-      end
-      ch_face = bottom_face
+      ch_face = bottom_face  #[0]
       #  Construire le repère sur la face du dessous
       p1 = ch_face.vertices[0].position
       p2 = ch_face.vertices[1].position
@@ -3088,6 +3107,11 @@ module Auvent
       if obj.is_a?(Sketchup::Group) || obj.is_a?(Sketchup::ComponentInstance)
         ents = obj.entities
         resultat += ents.grep(Sketchup::Group).select { |g| g.name.to_s.upcase.include?("CHEVRON") }
+        ents.grep(Sketchup::Group).each { |g| resultat += trouver_chevrons(g) }
+      end
+      if obj.is_a?(Sketchup::Group) || obj.is_a?(Sketchup::ComponentInstance)
+        ents = obj.entities
+        resultat += ents.grep(Sketchup::Group).select { |g| g.name.to_s.upcase.include?("RAFTER") }
         ents.grep(Sketchup::Group).each { |g| resultat += trouver_chevrons(g) }
       end
       resultat
@@ -3195,32 +3219,25 @@ module Auvent
       profil = ents.add_face(p1, p2, p3)
       edges = face.outer_loop.edges
       profil.followme(edges)
-      #if profil.valid?
-        #profil.erase!   #inutile dans ce cas
-      #end
     end
-	
-    def self.creer_chevron(parent,distance_horizontal,hauteur,epaisseur,pente_rad,debord,posx,posz)
-      #pos_z dessus de la poutre du bas
+
+    def self.creer_chevron(parent,distance_horizontal,epaisseur,hauteur,pente_rad,debord,posx,posAv,posAr,name,chanfrein)
+      av_z = posAv.z - chanfrein    #ajustage du chanfrein sur la poutre avant(basse)
+      ar_z = posAr.z + chanfrein     #ajustage du chanfrein sur la poutre arrière(haute)
       g = parent.entities.add_group
-      g.name = "CHEVRON"
+      g.name = name
       g.layer = parent.layer
       ge = g.entities
-      # Section locale : X = direction chevron, Y = direction poutre
-      longueur = distance_horizontal/Math.cos(pente_rad)
-      pos_y =distance_horizontal-debord
-      #pos_y=(;ongueur-debord*Math.tan(pente_rad))*Math.cos(pente_rad)
-      #longeur_horizontale_debord=debord*Math.tan(pente_rad)
       hauteur_vertical_chevron=hauteur/Math.cos(pente_rad)
-      cor_vertical_debord = debord * Math.tan(pente_rad)   #debord/Math.cos(pente_rad)
-      pos_z_1=posz-cor_vertical_debord
-      pos_z_2=pos_z_1+longueur*Math.sin(pente_rad)
+      cor_vertical_debord = debord * Math.tan(pente_rad)
+      pos_z_1=av_z - cor_vertical_debord
+      pos_z_2=ar_z
       pos_z_3=pos_z_2+hauteur_vertical_chevron
-      pos_z_4=pos_z_1+hauteur_vertical_chevron
-      p1=Geom::Point3d.new(posx, -debord, pos_z_1)
-      p2=  Geom::Point3d.new(posx,  pos_y, pos_z_2)
-      p3=Geom::Point3d.new(posx, pos_y,  pos_z_3)
-      p4=Geom::Point3d.new(posx,-debord  ,  pos_z_4)
+      pos_z_4=pos_z_1+hauteur_vertical_chevron -cor_vertical_debord
+      p1=Geom::Point3d.new(posx,posAv.y-debord , pos_z_1)
+      p2=  Geom::Point3d.new(posx,posAr.y , pos_z_2)
+      p3=Geom::Point3d.new(posx, posAr.y, pos_z_3)
+      p4=Geom::Point3d.new(posx,posAv.y-debord , pos_z_4)
       face = ge.add_face(
         p1,
         p2,
@@ -3232,12 +3249,12 @@ module Auvent
     end
 
     def self.delete_liteaux(gents)
-      liteaux = gents.grep(Sketchup::Group).select { |g| g.name == "LITEAU" }
+      liteaux = gents.grep(Sketchup::Group).select { |g| g.name == "LITEAU" || g.name == "BATTEN"}
       liteaux.each(&:erase!)
     end
 
     def self.delete_rive(gents)
-      rive = gents.grep(Sketchup::Group).select { |g| g.name == "RIVE_BASSE" }
+      rive = gents.grep(Sketchup::Group).select { |g| g.name == "RIVES" || g.name == "FASCIA"}
       rive.each(&:erase!)
     end
 
@@ -3374,9 +3391,9 @@ module Auvent
         begin
           e.erase!
         rescue TypeError
-          puts " L’edge était déjà supprimé → on ignore"
+          puts "The edge was already removed → ignore. /  L’edge était déjà supprimé → on ignore"
         rescue
-          puts "Toute autre erreur → on ignore aussi"
+          puts "Any other error → ignore as well / Toute autre erreur → on ignore aussi"
         end
       end
       #  Nettoyage vertices ---
@@ -3488,9 +3505,10 @@ module Auvent
         # On ne descend que dans Group ou ComponentInstance
         if child.is_a?(Sketchup::Group) || child.is_a?(Sketchup::ComponentInstance)
           nom = child.name.to_s.strip.upcase
-          if ["CHEVRON", "LITEAU", "PANNE", "POTEAU", "XY","CLIN","LAME","LAMBRIS",
+          if ["CHEVRON", "POUTRE","LITEAU", "PANNE", "POTEAU", "XY","CLIN","PANNEAU","LAME","LAMBRIS",
             "CUTTER","PANNEAU CLINS","PANNEAU LAMBRIS","RIVE","GOUTIERE","SOL",
-            "ANGLE_XZ","ANGLE_YZ","COUVERTURE"].include?(nom)
+            "ANGLE_XZ","ANGLE_YZ","COUVERTURE","MONTANT","TRAVERSE","DESSUS","POST","BEAM",
+            "BATTEN","GUTTER","CLADDING","PANELING","GROUND","PANEL","TOP","RAIL","UPRIGHT","RAFTER"].include?(nom)
             bb = child.bounds
             dims = [
               (bb.max.x - bb.min.x).abs.to_cm,

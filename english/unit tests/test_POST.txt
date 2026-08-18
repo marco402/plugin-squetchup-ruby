@@ -1,0 +1,6 @@
+-All dimensions are in mm.
+#Menu auvent->Générer ossature depuis fichier
+#POST
+  #POST;section x;section y;post_top;x post;y post;z post;MAT=woodAuvent 
+    #60x40 section post: the top is at 500, it starts at (0, 0, 100) —> its length is 400.
+  POST;40;60;500;0;0;100;MAT=woodAuvent

@@ -1,0 +1,9 @@
+#Les côtes sont en mm
+#Menu auvent->Générer ossature depuis fichier
+#Minimum 1 liteau pour poser la rive 
+#Si le profil est modifié (ajout de bord) vérifier la gouttière
+#RIVES
+  #LITEAU;0;30;40;0;0;0;500;0;0;MAT=woodAuvent
+  LITEAU;0;30;40;0;500;500;500;500;500;MAT=woodAuvent 
+  #RIVES;sectionXY;sectionZ;MAT=xxx
+  RIVES;22;150;MAT=woodAuvent

@@ -1,0 +1,6 @@
+#Les côtes sont en mm
+#Menu auvent->Générer ossature depuis fichier
+#ANGLE_XZ;sectionXY;sectionZ;x;y;z;longueur;angle_deg;point_haut;MAT=xxx
+  #point_haut=0 x,y,z= point bas
+  #point_haut=1 x,y,z= point haut
+  ANGLE_XZ;20;30;0;0;0;300;20;1;MAT=woodAuvent

@@ -1,0 +1,15 @@
+#Les côtes sont en mm
+#Menu auvent->Générer ossature depuis fichier
+#Minimum 2 liteaux pour poser la couverture
+#dans le code les debords sont en "dur"
+   #        debords = {
+   #          gauche: 0.mm,
+   #          droite: 0.mm,
+   #          haut: 0.mm,
+   #          bas: 50.mm
+   #       }
+#après Générer ossature depuis fichier--->Menu auvent->Générer couverture
+ #LITEAU;nombre;section_xy;section_z;MAT=xxx
+  LITEAU;0;30;40;0;0;0;500;0;0;MAT=woodAuvent
+  LITEAU;0;30;40;0;500;500;500;500;500;MAT=woodAuvent
+

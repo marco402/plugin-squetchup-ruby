@@ -1,0 +1,26 @@
+#dessin d'un tabouret
+section_x=30
+section_y=40
+delta_montants=20
+hauteur=500
+largeur_base=300
+MONTANT;section_x;section_y;0;0;0;delta_montants;delta_montants;hauteur;option;MAT=woodAuvent     #montant 1
+MONTANT;section_x;section_y;largeur_base;0;0;largeur_base-delta_montants;delta_montants;hauteur;option;MAT=woodAuvent     #montant 2
+MONTANT;section_x;section_y;largeur_base;largeur_base;0;largeur_base-delta_montants;largeur_base-delta_montants;hauteur;option;MAT=woodAuvent     #montant 3
+MONTANT;section_x;section_y;0;largeur_base;0;delta_montants;largeur_base-delta_montants;hauteur;option;MAT=woodAuvent     #montant 4
+
+#dessus on peux utiliser PANNEAU
+#alignement du dessus avec la base
+epaisseur_dessus=30
+largeur_base_reel=350
+rayon=30
+DESSUS;-60;-60;hauteur+epaisseur_dessus;largeur_base_reel;largeur_base_reel;hauteur+epaisseur_dessus;epaisseur_dessus;1;2;rayon;MAT=woodAuvent   #option:1 angles arrondis type 1:polycarbonate  type 2:panneau plein
+
+#traverses
+section_traverse_x=25
+section_traverse_y=25
+
+TRAVERSE;section_traverse_x;section_traverse_y;10;10;200;largeur_base-10;10;200;option;MAT=woodAuvent     #traverse 1 avant en x
+TRAVERSE;section_traverse_x;section_traverse_y;10;largeur_base-10;200;largeur_base-10;largeur_base-10;200;option;MAT=woodAuvent     #traverse 2 arrière en x
+TRAVERSE;section_traverse_x;section_traverse_y;10;10;200;10;largeur_base-10;200;option;MAT=woodAuvent     #traverse 3 gauche en y
+TRAVERSE;section_traverse_x;section_traverse_y;largeur_base-10;10;200;largeur_base-10;largeur_base-10;200;option;MAT=woodAuvent     #traverse 4 gauche en y

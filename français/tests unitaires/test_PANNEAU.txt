@@ -1,0 +1,31 @@
+#Les côtes sont en mm
+#Menu auvent->Générer ossature depuis fichier
+#PANNEAU ou DESSUS
+      #option:1 angles arrondis de rayon rayon uniquement pour un panneau horizontal.
+      #type 1:polycarbonate
+      #type 2:panneau plein
+#L'option 1 angles arrondis est prévue uniquement pour un panneau horizontal
+#2 Cas:
+# Cas 1:PANNEAU;x1;y1;z1;x2;y2;z2;épaisseur;option;type;rayon;MAT=xxx  
+  #Panneau plein
+    PANNEAU;2000;50;100;2000;1050;1000;25;0;2;0;MAT=lambris
+  #Panneau polycarbonate
+    PANNEAU;0;50;100;1000;50;1000;25;0;1;0;MAT=EffetTransparent
+  #Panneau plein angles arrondis
+    DESSUS;3000;500;100;4000;1000;100;25;1;2;50;MAT=woodAuvent   #rayon de 50mm
+  #Panneau horizontal
+    PANNEAU;0;0;2000;1000;1000;2000;25;0;1;0;MAT=EffetTransparent
+# Cas 2:PANNEAU;x1;y1;z1;x2;y2;z2;x3;y3;z3;x4;y4;z4;épaisseur;option;type;rayon;MAT=xxx
+  #Les 4 points doivent êtres coplanaires
+  #Les 4 points doivent êtres ordonnés correctement, les angles opposés ne doivent pas se suivre.
+  #Panneau plein
+    PANNEAU;1500;0;0;1500;1000;0;1500;1000;1000;1500;0;1000;25;0;2;0;MAT=lambris
+  #Panneau plein
+    PANNEAU;2800;50;100;2800;50;1000;2800;1050;1000;2800;1050;100;25;0;2;0;MAT=lambris
+  #Panneau polycarbonate
+    DESSUS;4000;50;100;4000;50;1000;4000;1050;1000;4000;1050;100;25;0;1;0;MAT=EffetTransparent
+  #Panneau plein angles arrondis
+    PANNEAU;3000;500;1000;4000;500;1000;4000;1000;1000;3000;1000;1000;25;1;2;50;MAT=woodAuvent
+  #Panneaux en biais 1 axe
+    PANNEAU;6500;50;100;6500;50;1000;5000;1050;1000;5000;1050;100;25;0;2;0;MAT=lambris
+    PANNEAU;8000;50;100;8000;50;1000;7000;1050;1000;7000;1050;100;25;0;1;0;MAT=EffetTransparent
