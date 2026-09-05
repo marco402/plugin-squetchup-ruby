@@ -15,4 +15,4 @@ BEAM;40;60;0;0;0;1000;0;300;MAT=woodAuvent
 #BEAM with projected length on X of 1000; start axis at 0,0,0; end axis at 0, 500, 300.
 BEAM;40;60;0;0;0;1000;500;300;MAT=woodAuvent
 #Beam parallel to the y-axis, with a projected length of 0 on the x-axis; start axis at (0, 0, 0), end axis at (0, 200, 300).
-BEAM;40;60;0;0;0;0;200;300;MAT=woodAuvent
+BEAM;40;60;0;0;0;0;200;300;MAT=0xff00ff #magenta MAT=woodAuvent

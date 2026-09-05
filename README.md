@@ -1,5 +1,9 @@
 French version after English version.
 ---------------------------------------------------------------------------------------------------------------------------
+version 4:
+-The material is either in the folder ...\SketchUp\Plugins\auvent\materialsAuvent
+    or one of the RUBY colors: Green, Blue, Red
+    or a hexadecimal color: MAT=0xff00ff #magenta
 version 3:
    Added Folder English
      -Added 14 units tests for each matérial folder unit tests.
@@ -124,6 +128,10 @@ For panels that do not touch a rafter or for special cases,
         - Right-click and select "Save as" to ...\SketchUp\Plugins\auvent\materialsAuvent
 
 ---------------------------------------------------------------------------------------------------------------------------
+version 4:
+-Le matériel est soit dans le dossier ...\SketchUp\Plugins\auvent\materialsAuvent
+    soit les couleurs RUBY: Green,Blue,Red
+    soit une couleur hexadécimal: MAT=0xff00ff #magenta
 version 3:
    -Ajout de 14 tests unitaires pour chaque type d'élément.
    -Création d'un dossier français et english.
@@ -187,7 +195,7 @@ Pour les panneaux qui ne tangente pas un chevron ou pour des cas particulier,
 
 # Composition du plugin dans 
      C:\Users\userName\AppData\Roaming\SketchUp\SketchUp 2017\SketchUp\Plugins
-          - UI_auvent.rb	
+          - UI_auvent.rb
                - auvent\auvent.rb
                - auvent\auvent_constants.rb
                - auvent\utils_auvent.rb
@@ -207,7 +215,7 @@ Pour les panneaux qui ne tangente pas un chevron ou pour des cas particulier,
               Plan mairie.style
 
     - Un fichier modèle pour utiliser le menu Générer toiture sur garage.
-         \components\garage_sans_toit.skp	  
+         \components\garage_sans_toit.skp
 
 # Cas particuliers
     Ce code contient des traitements particuliers liés à mes auvents, le test se fait sur le nom du composant.

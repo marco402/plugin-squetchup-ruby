@@ -3,6 +3,9 @@
 -En général x y z sont les axes des pièces.
 -# Commente la ligne ou la fin de ligne
 -Il est possible d'utiliser des constantes avec des opération LARGEUR=30+20 et LONGUEUR=LARGEUR+10
+-Le matériel est soit dans le dossier ...\SketchUp\Plugins\auvent\materialsAuvent
+    soit les couleurs RUBY: Green,Blue,Red
+    soit une couleur hexadécimal: MAT=0xff00ff #magenta
 
 POTEAU ou POST   voir "tests unitaires/test_POTEAU.txt"
   POTEAU;section x;section y;sommet poteau;x poteau;y poteau;z poteau;MAT=woodAuvent 

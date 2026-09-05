@@ -8,7 +8,7 @@
 #2 Cas:
 # Cas 1:PANNEAU;x1;y1;z1;x2;y2;z2;épaisseur;option;type;rayon;MAT=xxx  
   #Panneau plein
-    PANNEAU;2000;50;100;2000;1050;1000;25;0;2;0;MAT=lambris
+    PANNEAU;2000;50;100;2000;1050;1000;25;0;2;0;MAT=0xff00ff #magenta
   #Panneau polycarbonate
     PANNEAU;0;50;100;1000;50;1000;25;0;1;0;MAT=EffetTransparent
   #Panneau plein angles arrondis

@@ -3,6 +3,9 @@
 -In general, x, y, z are the axes of the parts.
 -# comments out the line or the end of the line
 -Constants can be used with operations, e.g., WIDTH=30+20 and LENGTH=WIDTH+10
+-The material is either in the folder ...\SketchUp\Plugins\auvent\materialsAuvent
+    or one of the RUBY colors: Green, Blue, Red
+    or a hexadecimal color: MAT=0xff00ff #magenta
 
 POST  See "unit tests/test_POST.txt"
   POST;section x;section y;post_top;x post;y post;z post;MAT=woodAuvent

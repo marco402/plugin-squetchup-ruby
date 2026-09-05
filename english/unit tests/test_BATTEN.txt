@@ -11,7 +11,7 @@
   #BATTEN;number;section_xy;section_z;MAT=xxx
   
 #1-Case independent of the RAFTERs
-  BATTEN;0;30;40;0;0;0;100;200;300;MAT=woodAuvent
+  BATTEN;0;30;40;0;0;0;100;200;300;MAT=0xff00ff #magenta MAT=woodAuvent
 
 #2-Case sur les RAFTERs
   #BEAM parallel to x-axis; projected length on x-axis: 1000; axis origin: 0,0,0; axis end: 0,0,300.

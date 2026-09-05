@@ -11,7 +11,7 @@
   #LITEAU;nombre;section_xy;section_z;MAT=xxx
   
 #1-Cas indépendant des chevrons
-  LITEAU;0;30;40;0;0;0;100;200;300;MAT=woodAuvent
+  LITEAU;0;30;40;0;0;0;100;200;300;MAT=0xff00ff #magenta
 
 #2-Cas sur les chevrons
   #poutre parallèle à x  longueur projetée su x 1000, axe origine 0;0;0 axe de fin en 0,0,300

@@ -20,4 +20,4 @@
   CUTTER;-618;60;2870;0;60;2252;0;120;2252;-618;120;2252;zminus;TRIANGLE  #zminus towards the part to be removed
 #PANELING cut along a RAFTER
   RAFTER;0;30;60;0;6080;-290;2938;6080;3415;3670;MAT=woodAuvent
-  PANELING;5960+30;180-55;1730;3290;2000;xplus;vertical;70;10;1;MAT=lambris
+  PANELING;5960+30;180-55;1730;3290;2000;xplus;vertical;70;10;1;MAT=0xff00ff #magenta MAT=lambris

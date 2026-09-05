@@ -15,7 +15,7 @@
 #1-Cas indépendant des poutres
   #CHEVRON;0;30;60;0;0;0;0;0;500;200;MAT=woodAuvent  
   #Horizontal
-    CHEVRON;0;30;60;0;0;0;0;0;500;0;MAT=woodAuvent  
+    CHEVRON;0;30;60;0;0;0;0;0;500;0;MAT=0xff00ff #magenta
 #2-Cas sur les poutres
   #Poutre parallèle à x  longueur projetée su x 1000, axe origine 0;0;0 axe de fin en 0,0,300
   #POUTRE;100;150;0;0;0;1000;0;0;MAT=woodAuvent    #poutre basse

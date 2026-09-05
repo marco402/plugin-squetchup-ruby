@@ -7,5 +7,5 @@
    #-option=3: chanfrein + moulure en V
    #-Ces moulures sont sur les 4 cotés de l'extrémitée point x1;y1;z1
    
-  XY;80;80;100;200;300;100;200;600;3;MAT=woodAuvent
+  XY;80;80;100;200;300;100;200;600;3;MAT=0xff00ff #magenta
   #XY;80;80;100;200;600;100;200;300;3;MAT=woodAuvent

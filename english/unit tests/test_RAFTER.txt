@@ -15,7 +15,7 @@
 #1-Case independent of the BEAMs
   #RAFTER;0;30;60;0;0;0;0;0;500;200;MAT=woodAuvent  
   #Horizontal
-    RAFTER;0;30;60;0;0;0;0;0;500;0;MAT=woodAuvent  
+    RAFTER;0;30;60;0;0;0;0;0;500;0;MAT=0xff00ff #magenta MAT=woodAuvent  
 #2-Case on BEAMs
   #BEAM parallel to x-axis; projected length on x-axis: 1000; axis origin: 0,0,0; axis end: 0,0,300.
   #BEAM;100;150;0;0;0;1000;0;0;MAT=woodAuvent    #low BEAM 

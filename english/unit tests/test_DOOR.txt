@@ -2,5 +2,5 @@
 #Menu auvent->Générer ossature depuis fichier 
   #We need z > 0; otherwise, the gate is entirely below z, and there is no cap.
   #PANELING;x;y;z;width_x;height_y;direction;orientation;spacing;thickness;on_RAFTER;Id;MAT=xxx
-  LAMBRIS;0;0;1;1010;1500;yminus;vertical;112;20;0;CHAPEAU;MAT=lambris   #door with cap
+  LAMBRIS;0;0;1;1010;1500;yminus;vertical;112;20;0;CHAPEAU;MAT=0xff00ff #magenta  MAT=lambris   #door with cap
   

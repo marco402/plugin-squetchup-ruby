@@ -3,4 +3,4 @@
 #POTEAU
 #POTEAU;section x;section y;sommet poteau;x poteau;y poteau;z poteau;MAT=woodAuvent 
 #Poteau de section 60*40 le haut est à 500 il part de 0,0,100--->sa longueur est de 400
-  POTEAU;40;60;500;0;0;100;MAT=woodAuvent
+  POTEAU;40;60;500;0;0;100;MAT=0xff00ff #magenta

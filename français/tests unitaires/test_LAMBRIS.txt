@@ -7,12 +7,12 @@
 #xplus et xmoins ou yplus et ymoins donne le même résultat si le lambris est symétrique.
 #Lambris horizontaux
   #Normale en y
-    LAMBRIS;0;0;0;300;500;yminus;horizontal;130;20;0;Id;MAT=lambris
+    LAMBRIS;0;0;0;300;500;yminus;horizontal;130;20;0;Id;MAT=0xff00ff #magenta
   #Normale en x
-  LAMBRIS;100;100;100;300;500;xplus;horizontal;130;20;0;Id;MAT=lambris
+    LAMBRIS;100;100;100;300;500;xplus;horizontal;130;20;0;Id;MAT=lambris
 #Lambris verticaux
   #Normale en y
-    LAMBRIS;200;200;200;300;500;yplus;vertical;130;20;0;Id;MAT=lambris
+    LAMBRIS;200;200;200;300;500;yplus;vertical;130;20;0;Id;MAT=xxxxxx     #material inconnu=red
   #Normale en x   
     LAMBRIS;200;200;200;300;500;xminus;vertical;130;20;0;Id;MAT=lambris
 #Lambris coupé en biais avec CUTTER
