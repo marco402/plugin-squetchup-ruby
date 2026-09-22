@@ -1,0 +1,7 @@
+#Les côtes sont en mm
+#Menu auvent->Générer ossature depuis fichier
+#RENFORT_45
+#RENFORT_45;section_x_ou_y;section_z;x1;y1;z1;x2;y2;z2;id;MAT=xxx    pt1 and pt2 are the axis of the reinforcement.
+RENFORT_45;60;60;90;-660;2870;90;0;2210;id;MAT=Green
+RENFORT_45;30;60;-500;0;2000;0;0;1500;id;MAT=Blue
+RENFORT_45;30;60;500;0;2000;0;0;1500;id;MAT=Yellow

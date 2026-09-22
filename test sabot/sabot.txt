@@ -1,0 +1,41 @@
+#VersionLogiciel=5.0
+
+#générer ossature depuis fichier(sabot.txt)
+#développement sur 1 plan : coller sabot_a_plat.txt dans la console ruby 
+#ajoutez les côtes
+#générer plan A4
+#exporter plan A4
+#imprimer: redimentionner si nécessaire et imprimer en noir et blanc
+
+#console ruby:puts Sketchup::Color.names.inspect
+EPAISSEUR_TOLE=2.0
+LARGEUR_CORNIERE=45.0   #ou 36.5
+EPAISSEUR_BANDEAU=20.0
+LARGEUR_BARRE=60.0
+RETOUR_BARRE=15.0
+PENTE_TOIT_DEG=-19.3
+PENTE_TOIT_RAD=PENTE_TOIT_DEG/180.0*Math::PI
+#ANGLE_XZ;sectionX;sectionY;x;y;z;longueur;angle_deg;point_haut;id;MAT=xxx
+#test couleur inexistante(xLime)-->Red
+ANGLE_XZ;LARGEUR_CORNIERE;EPAISSEUR_TOLE;-EPAISSEUR_TOLE/2;0;0;EPAISSEUR_BANDEAU+LARGEUR_BARRE+RETOUR_BARRE;-20.0;0;dessus;MAT=xLime   #piece du dessus pente du toit 35%----->auvent 25°
+H_BANDEAU=166.0
+PENTE_AUVENT_DEG=-19.7
+PENTE_AUVENT_RAD=PENTE_AUVENT_DEG/180.0*Math::PI
+DEPASSEMENT_CHEVRON=60.0  / Math.cos(PENTE_AUVENT_RAD)   #49.0
+#XY;section_x;section_y;x1;y1;z1;x2;y2;z2;option;id;MAT=xxx
+X2=(EPAISSEUR_BANDEAU+LARGEUR_BARRE+RETOUR_BARRE)* Math.cos(PENTE_TOIT_RAD) -EPAISSEUR_TOLE/2  #+3 pour les épaisseurs 
+Z2 =-(EPAISSEUR_BANDEAU+LARGEUR_BARRE+RETOUR_BARRE) * Math.sin(PENTE_TOIT_RAD)+EPAISSEUR_TOLE    #=33
+Z3=-(Z2+H_BANDEAU+DEPASSEMENT_CHEVRON)
+MONTANT;EPAISSEUR_TOLE;LARGEUR_CORNIERE;X2;0;-Z2;X2;0;Z3;option;vertical;MAT=Lime   #pièce verticale 40=dépassement chevron
+
+LONGUEUR_RENFORT=60.0
+ANGLE_XZ;LARGEUR_CORNIERE;EPAISSEUR_TOLE;X2+EPAISSEUR_TOLE/2;0;Z3;LONGUEUR_RENFORT;PENTE_AUVENT_DEG;0;sous_chevron;MAT=0xff00ff #magenta   #sous le chevron
+Y4=(LARGEUR_CORNIERE/2)
+#LARGEUR_CORNIERE=45.0
+X4= LARGEUR_CORNIERE * Math.cos(PENTE_AUVENT_RAD)+1.3
+Z4= -LARGEUR_CORNIERE * Math.sin(PENTE_AUVENT_RAD)
+HAUTEUR_CHEVRON_UTIL=60.0   #70.0
+W = HAUTEUR_CHEVRON_UTIL / Math.cos(PENTE_AUVENT_RAD)    #/Math.cos(PENTE_AUVENT_RAD)
+#PANNEAU;x1;y1;z1;x2;y2;z2;x3;y3;z3;x4;y4;z4;épaisseur;option;type;rayon;id;MAT=xxx
+#PANNEAU;X2;-Y4 -EPAISSEUR_TOLE/2 ;Z3;X2;-Y4 -EPAISSEUR_TOLE/2 ;Z3+W;X2+X4;-Y4 -EPAISSEUR_TOLE/2 ;Z3+W-Z4;X2+X4;-Y4 -EPAISSEUR_TOLE/2 ;Z3-Z4;EPAISSEUR_TOLE;0;2;0;gauche;MAT=Blue  #coté gauche
+PANNEAU;X2;Y4-EPAISSEUR_TOLE/2 ;Z3;X2;Y4-EPAISSEUR_TOLE/2 ;Z3+W;X2+X4+EPAISSEUR_TOLE/2 ;Y4-EPAISSEUR_TOLE/2 ;Z3+W-Z4;X2+X4+EPAISSEUR_TOLE/2 ;Y4-EPAISSEUR_TOLE/2 ;Z3-Z4;EPAISSEUR_TOLE;0;2;0;droite;MAT=Yellow    #coté droit

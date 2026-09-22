@@ -10,6 +10,6 @@
    #          bas: 50.mm
    #       }
 #after Generate framing from file--->Menu auvent->Generate roof covering
- #BATTEN;number;section_xy;section_z;MAT=xxx
-  BATTEN;0;30;40;0;0;0;500;0;0;MAT=woodAuvent
-  BATTEN;0;30;40;0;500;500;500;500;500;MAT=0xff00ff #magenta MAT=woodAuvent
+ #BATTEN;number;section_xy;section_z;id;MAT=xxx
+  BATTEN;0;30;40;0;0;0;500;0;0;id;MAT=woodAuvent
+  BATTEN;0;30;40;0;500;500;500;500;500;id;MAT=0xff00ff #magenta MAT=woodAuvent

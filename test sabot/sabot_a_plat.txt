@@ -1,0 +1,163 @@
+
+# Fonction magique pour remettre à plat un groupe dessiné de biais
+def self.remettre_groupe_a_plat(groupe)
+  return unless groupe
+
+  # 1. Trouver la face principale du panneau (la plus grande surface)
+  face_principale = groupe.entities.grep(Sketchup::Face).max_by(&:area)
+  return unless face_principale
+
+  # 2. Obtenir le vecteur normal de cette face
+  normale = face_principale.normal
+
+  # L'objectif est d'aligner cette normale avec l'axe vertical global Z (0,0,1)
+  axe_cible = Geom::Vector3d.new(0, 0, 1)
+
+  # Si la face est déjà parfaitement à plat, on ne fait rien
+  return if normale.parallel?(axe_cible)
+
+  # 3. Calculer l'axe de rotation (perpendiculaire aux deux vecteurs) et l'angle
+  axe_rotation = normale.cross(axe_cible)
+  angle_rad = normale.angle_between(axe_cible)
+
+  # 4. Créer la transformation de rotation (autour de l'origine interne du groupe)
+  point_pivot = Geom::Point3d.new(0, 0, 0)
+  tr_redressement = Geom::Transformation.rotation(point_pivot, axe_rotation, angle_rad)
+
+  # 5. On applique la transformation DIRECTEMENT sur la géométrie interne du groupe 
+  # pour corriger le dessin d'origine "de biais" !
+  groupe.entities.transform_entities(tr_redressement, groupe.entities.to_a)
+end
+
+def find_group_by_id(id,type)
+  model = Sketchup.active_model
+
+  model.entities.grep(Sketchup::Group).each do |g|
+    return g if g.get_attribute(type, "id") == id
+  end
+
+  model.definitions.each do |d|
+    d.entities.grep(Sketchup::Group).each do |g|
+      return g if g.get_attribute(type, "id") == id
+    end
+  end
+
+  nil
+end
+# Fonction pour mesurer la vraie dimension d'une face à plat le long des axes X et Y
+def self.mesurer_dimensions_reelles(groupe)
+  return [0.mm, 0.mm] unless groupe
+  
+  # On récupère toutes les arêtes de la face principale
+  face_principale = groupe.entities.grep(Sketchup::Face).max_by(&:area)
+  return [0.mm, 0.mm] unless face_principale
+  
+  # On extrait toutes les coordonnées X et Y des sommets (vertices) de cette face
+  points = face_principale.vertices.map { |v| v.position }
+  x_coords = points.map { |pt| pt.x }
+  y_coords = points.map { |pt| pt.y }
+  
+  # La vraie largeur et profondeur sont la différence entre le maximum et le minimum
+  largeur_reelle = x_coords.max - x_coords.min
+  profondeur_reelle = y_coords.max - y_coords.min
+  
+  [largeur_reelle, profondeur_reelle]
+end
+
+
+
+# --- APPLICATION DU PLACEMENT ---
+
+p_centre = find_group_by_id("vertical","MONTANT")   #ents.grep(Sketchup::Group).find { |g| g.get_attribute("MONTANT", "id") == "vertical" }
+p_nord   = find_group_by_id("dessus","ANGLE_XZ")   #ents.grep(Sketchup::Group).find { |g| g.get_attribute("ANGLE_XZ", "id") == "dessus" }
+p_sud    = find_group_by_id("sous_chevron","ANGLE_XZ")   #ents.grep(Sketchup::Group).find { |g| g.get_attribute("ANGLE_XZ", "id") == "sous_chevron" }
+p_est    = find_group_by_id("droite","PANNEAU")   #ents.grep(Sketchup::Group).find { |g| g.get_attribute("PANNEAU", "id") == "droite" }
+#p_ouest  = find_group_by_id("gauche","PANNEAU")   #ents.grep(Sketchup::Group).find { |g| g.get_attribute("PANNEAU", "id") == "gauche" }
+
+
+
+# 1. On applique d'abord votre fonction de redressement géométrique (déjà validée)
+remettre_groupe_a_plat(p_centre)
+remettre_groupe_a_plat(p_nord)
+remettre_groupe_a_plat(p_sud)
+remettre_groupe_a_plat(p_est)
+#remettre_groupe_a_plat(p_ouest)
+
+#les 4 plaques sont à plat longueur sur X largeur sur Y 
+
+#on positionne toutes les plaque à Z=0
+    p_max=p_centre.bounds.max
+tr_placement =Geom::Transformation.translation([0,0,-p_max.z])
+p_centre.transform!(tr_placement)
+    p_max=p_nord.bounds.max
+tr_placement =Geom::Transformation.translation([0,0,-p_max.z])
+p_nord.transform!(tr_placement)
+    p_max=p_sud.bounds.max
+tr_placement =Geom::Transformation.translation([0,0,-p_max.z])
+p_sud.transform!(tr_placement)
+    p_max=p_est.bounds.max
+tr_placement =Geom::Transformation.translation([0,0,-p_max.z])
+p_est.transform!(tr_placement)
+
+#déplacer les pièces pour les joindres à leurs places par rapport au centre
+#X_max de p_nord doit être égal à  X_min de p_centre 
+#Y min de p_nord doit être égal à  Y_min de p_centre 
+
+    p_min=p_nord.bounds.max
+    p_max=p_nord.bounds.max
+tr_placement =Geom::Transformation.translation([0,0,-p_max.z])
+p_nord.transform!(tr_placement)
+
+#X_min de p_sud doit être égal à  X_max de p_centre 
+#Y min de p_sud doit être égal à  Y_min de p_centre 
+    p_min=p_sud.bounds.max
+    p_max=p_sud.bounds.max
+tr_placement =Geom::Transformation.translation([0,0,-p_max.z])
+p_sud.transform!(tr_placement)
+
+#X_min de p_est doit être égal à  X_max de p_centre 
+#Y min de p_est doit être égal à  Y_min de p_centre 
+    p_min=p_est.bounds.max
+    p_max=p_est.bounds.max
+tr_placement =Geom::Transformation.translation([0,0,-p_max.z])
+p_est.transform!(tr_placement)
+
+
+
+
+
+# 2. On remet toutes les coordonnées globales à zéro (0,0,0) pour SketchUp 2017
+p_centre.transform!(p_centre.transformation.inverse) if p_centre
+
+# 3. On mesure précisément le centre redressé à plat
+largeur_c, profondeur_c = mesurer_dimensions_reelles(p_centre)
+
+
+exit!
+
+# 4. Repositionnement précis des panneaux périphériques
+[p_nord, p_sud, p_est].compact.each do |p|
+  p.transform!(p.transformation.inverse) # Reset position globale
+  
+  id_panneau = p.get_attribute("PANNEAU", "id")
+  largeur_p, profondeur_p = mesurer_dimensions_reelles(p)
+  
+  case id_panneau
+  when "dessus"
+    # Placé exactement contre le bord haut du centre
+    tr_placement = Geom::Transformation.new(Geom::Point3d.new(0, profondeur_c, 0))
+  when "sous_chevron"
+    # Placé exactement contre le bord bas du centre (on descend de sa propre profondeur)
+    tr_placement = Geom::Transformation.new(Geom::Point3d.new(0, -profondeur_p, 0))
+  when "droite"
+    # Placé exactement contre le bord droit du centre
+    tr_placement = Geom::Transformation.new(Geom::Point3d.new(largeur_c, 0, 0))
+  #when "gauche"
+    ## Placé exactement contre le bord gauche du centre (on recule de sa propre largeur)
+    #tr_placement = Geom::Transformation.new(Geom::Point3d.new(-largeur_p, 0, 0))
+  else
+    next
+  end
+  
+  p.transform!(tr_placement)
+end

@@ -1,9 +1,14 @@
 French version after English version.
 ---------------------------------------------------------------------------------------------------------------------------
 version 4:
--The material is either in the folder ...\SketchUp\Plugins\auvent\materialsAuvent
-    or one of the RUBY colors: Green, Blue, Red
+  -The material is either in the folder ...\SketchUp\Plugins\auvent\materialsAuvent
+    Either Ruby color names: Green, Blue, Red...
+        you can list the colors using `puts Sketchup::Color.names.inspect` in the Ruby console
     or a hexadecimal color: MAT=0xff00ff #magenta
+    A non-existent color will be red.
+  -Constants can be used in operations, e.g., WIDTH=30+20 and LENGTH=WIDTH+10.
+  -Math functions can be used for parameter settings, e.g., Math.sin(ROOF_PITCH_RAD) or Math::PI.
+  -Add Unit test reinforcement_45(renfort_45.txt)
 version 3:
    Added Folder English
      -Added 14 units tests for each matérial folder unit tests.
@@ -129,9 +134,13 @@ For panels that do not touch a rafter or for special cases,
 
 ---------------------------------------------------------------------------------------------------------------------------
 version 4:
--Le matériel est soit dans le dossier ...\SketchUp\Plugins\auvent\materialsAuvent
-    soit les couleurs RUBY: Green,Blue,Red
-    soit une couleur hexadécimal: MAT=0xff00ff #magenta
+   -Le matériel est soit dans le dossier ...\SketchUp\Plugins\auvent\materialsAuvent
+     soit les couleurs RUBY: Green,Blue,Red... 
+     vous pouvez lister les couleurs avec puts Sketchup::Color.names.inspect dans la console ruby 
+     soit une couleur hexadécimal: MAT=0xff00ff #magenta
+     Une couleur inexistante sera rouge.
+   -Il est possible d'utiliser les fonction Math pour le paramétrage exemple Math.sin(PENTE_TOIT_RAD) ou Math::PI
+   -Ajout test unitaire renfort_45.txt.
 version 3:
    -Ajout de 14 tests unitaires pour chaque type d'élément.
    -Création d'un dossier français et english.
