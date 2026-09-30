@@ -33,8 +33,10 @@
     generator: :generate_tuiles_romanes
   },
   tuiles_canal_decoratives: {
-    name: "Tuiles canal decoratives",    #Decorative pan tiles
-    largeur: 140.mm,
+    name: "Tuiles canal decoratives",
+    material: "tuiles",
+    thickness: 6.mm,
+    largeur: 90.mm+50.mm,
     mode: :tiles,
     generator: :generate_tuiles_canal
   }
