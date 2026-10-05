@@ -1,0 +1,68 @@
+
+#POST;sectionX;sectionY;HEIGHT;x;y;z;MAT
+  SECTION_POSTXY = 180
+  HEIGHT_POSTX = 2870 
+    POST;SECTION_POSTXY;SECTION_POSTXY;HEIGHT_POSTX;SECTION_POSTXY/2;SECTION_POSTXY/2;0;MAT=woodAuvent   #Left POST, North corner base at 0,0,0
+    POST;SECTION_POSTXY;SECTION_POSTXY;HEIGHT_POSTX;SECTION_POSTXY/2+2530;SECTION_POSTXY/2;0;MAT=woodAuvent   #Left POST, East corner base at 0,0,0
+    POST;SECTION_POSTXY;SECTION_POSTXY;HEIGHT_POSTX;SECTION_POSTXY/2+5050;SECTION_POSTXY/2;0;MAT=woodAuvent   #Left POST, North East corner base at 0,0,0
+
+#XY;section_x;section_y;x1;y1;z1;x2;y2;z2;option;MAT=xxx
+ #option=1:chamfer at the bottom of the POST
+  X_UPRIGHT=5050+180+800-35
+    XY;70;70;X_UPRIGHT;90;1650;X_UPRIGHT;90;2870;3;MAT=woodAuvent   #Right-hand POST in height, option 3, chamfer + V-shaped molding
+
+#RENFORT_45;section_x_ou_y;section_z;x1;y1;z1;x2;y2;z2;MAT=xxx    pt1 and pt2 are the axis of the reinforcement.
+  DISTANCE=660
+  SECTION_RENFORT_Y=60
+  SECTION_RENFORT_Z=60
+  X1=-DISTANCE
+  Y1=SECTION_POSTXY/2
+  Z1=HEIGHT_POSTX
+  X2=0
+  Y2=Y1
+  Z2=HEIGHT_POSTX-DISTANCE
+    RENFORT_45;SECTION_RENFORT_Y;SECTION_RENFORT_Z;X1;Y1;Z1;X2;Y2;Z2;MAT=woodAuvent
+
+#BEAM;sectionX;sectionY;x1;y1;z1;length;y2;z2;MAT=xxx
+ #NOTE regarding Y: 0 = BEAM axis at 0 ========> Y_BEAM = SECTION_POSTXY/2
+  SECTION_BEAM_Y = 100
+  SECTION_BEAM_Z = 150
+  START_BEAM = -850   
+  Y_BEAM=SECTION_POSTXY/2
+  Z_BEAM = HEIGHT_POSTX+SECTION_BEAM_Z/2
+  LENGTH_BEAM = 2710+2520-START_BEAM #The START_BEAM will be added to this LENGTH.
+    BEAM;SECTION_BEAM_Y;SECTION_BEAM_Z;START_BEAM;Y_BEAM;Z_BEAM;LENGTH_BEAM;Y_BEAM;Z_BEAM;MAT=woodAuvent   #Front beam mounted on the 2 posts
+  SECTION_BEAM_Y_WALL = 60
+  SECTION_BEAM_Z_WALL = 150
+  Y_BEAM_WALL =3235-SECTION_BEAM_Y_WALL/2+SECTION_POSTXY
+  Z_BEAM_WALL = 3500+SECTION_BEAM_Z_WALL/2			#NOTE: This is the Z-axis of the BEAM.
+    BEAM;SECTION_BEAM_Y_WALL;SECTION_BEAM_Z_WALL;START_BEAM;Y_BEAM_WALL;Z_BEAM_WALL;LENGTH_BEAM;Y_BEAM_WALL;Z_BEAM_WALL;MAT=woodAuvent   #Front beam mounted on the two posts
+
+#RAFTER;section_x;section_y;exceeding,material
+  EXCEEDING_RAFTERS = 330
+    RAFTER;13;60;150;EXCEEDING_RAFTERS;MAT=woodAuvent
+
+#BATTEN;count;section_y;section_z;Id;MAT=xxx
+  BATTEN;7;50;25;id;MAT=woodAuvent	  #if fiber-cement
+  #BATTEN;11;40;27;id;MAT=woodAuvent   #if tiles
+
+#PANELING;x;y;z;width_x;height_y;direction;orientation;step;thickness;delta_height;ID;MAT=woodAuvent
+ #direction(normale to panel)xplus, xminus, yplus, yminus
+ #PANELING symmetrical==>xplus = xminus et  yplus = yminus
+ #vertical or horizontal orientation
+  DELTA_HEIGHT=1     #test coupe(Z_BEAM_WALL-Z_BEAM)  #+SECTION_BEAM_Z
+    PANELING;180;40;1730;2350;1140;yminus;vertical;70;10;0;NOID;MAT=lambris
+    PANELING;2710;40;1730;2340;1140;yminus;vertical;70;10;0;NOID;;MAT=lambris
+    PANELING;5230;40;1730;800-70;1140;yminus;vertical;70;10;0;NOID;;MAT=lambris
+    PANELING;5960+30;180-55;1730;3290;2000;xplus;vertical;70;10;DELTA_HEIGHT;MAT=lambris
+    PANELING;-617;80;2252;617;618;yminus;vertical;70;10;0;TRIANGLE;MAT=lambris
+    CUTTER;-618;60;2870;0;60;2252;0;120;2252;-618;120;2252;zminus;TRIANGLE  #less towards the part to be removed
+
+#FASCIA;sectionX;sectionY;MAT=xxx
+  FASCIA;25; 200;MAT=woodAuvent
+
+#GUTTER;diameter;MAT=xxx
+  GUTTER;100;MAT=goutiere
+
+#GROUND;sectionX;sectionY;height;x(axis);y(axis);z;MAT=xxx
+  GROUND;2715*2;1690*2;10;2715;1690;-10;MAT=sol_paves

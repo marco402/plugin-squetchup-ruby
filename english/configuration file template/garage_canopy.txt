@@ -1,0 +1,70 @@
+
+#POST
+  SECTION_POST_X=140
+  SECTION_POST_Y=115
+  X_POST_1=SECTION_POST_X/2				#outer corner of the South POST at (0,0,0)
+  X_POST_2=X_POST_1+2620+SECTION_POST_X
+  X_POST_3=X_POST_2+2820+SECTION_POST_X
+  Y_POST=SECTION_POST_Y/2
+  Z_POST_1=0
+  Z_POST_2=150
+  Z_POST_3=300
+  SUMMIT_POST=2020-120   #Includes bracket 120 = from underside of beam (inner side) to underside of rafter on post.
+    POST;SECTION_POST_X;SECTION_POST_Y;SUMMIT_POST;X_POST_1;Y_POST;Z_POST_1;MAT=woodAuvent   #POST South
+    POST;SECTION_POST_X;SECTION_POST_Y;SUMMIT_POST;X_POST_2;Y_POST;Z_POST_2;MAT=woodAuvent 
+    POST;SECTION_POST_X;SECTION_POST_Y;SUMMIT_POST;X_POST_3;Y_POST;Z_POST_3;MAT=woodAuvent   #POST North
+    POST;70;70;SUMMIT_POST+120;X_POST_3-1030-70-35;Y_POST-50;Z_POST_3-55;MAT=woodAuvent   #POST porte East
+    POST;70;70;1880+35;X_POST_1;1670;Z_POST_1+120;MAT=woodAuvent   #POST South-East door
+    POST;70;70;1880+35;X_POST_1;2460;Z_POST_1+120;MAT=woodAuvent   #POST South-West door
+ #To cut the ends at an angle, the beams are defined according to their profile.
+ #XY;section_x;section_y;x1;y1;z1;x2;y2;z2;option;MAT=xxx
+  SECTION_BEAM_X=80
+  SECTION_BEAM_Z=120
+  X1_BEAM_1=X_POST_1  #+(SECTION_POST_X-SECTION_BEAM_X)/2
+  Y1_BEAM_1=-250
+  Z1_BEAM_1=SUMMIT_POST+SECTION_BEAM_Z/2- 32
+  X2_BEAM_1=X1_BEAM_1
+  Y2_BEAM_1=3165+SECTION_POST_Y
+  Z2_BEAM_1=Z1_BEAM_1+420+32
+  #For these 3 XY, id=1 to distinguish between English and French.
+    XY;SECTION_BEAM_X;SECTION_BEAM_Z;X1_BEAM_1;Y1_BEAM_1;Z1_BEAM_1;X2_BEAM_1;Y2_BEAM_1;Z2_BEAM_1;0;1;MAT=woodAuvent #BEAM South
+  X1_BEAM_2=X_POST_2  #+(SECTION_POST_X-SECTION_BEAM_X)/2
+  X2_BEAM_2=X1_BEAM_2
+    XY;SECTION_BEAM_X;SECTION_BEAM_Z;X1_BEAM_2;Y1_BEAM_1;Z1_BEAM_1;X2_BEAM_2;Y2_BEAM_1;Z2_BEAM_1;0;1;MAT=woodAuvent 
+  X1_BEAM_3=X_POST_3  #+(SECTION_POST_X-SECTION_BEAM_X)/2
+  X2_BEAM_3=X1_BEAM_3
+    XY;SECTION_BEAM_X;SECTION_BEAM_Z;X1_BEAM_3;Y1_BEAM_1;Z1_BEAM_1;X2_BEAM_3;Y2_BEAM_1;Z2_BEAM_1;0;1;MAT=woodAuvent  #BEAM North
+
+#********************************RAFTERS---->BATTEN
+ #difference in configuration compared to other awnings: the beams run across the width, while the rafters run along the length.
+ #	The BEAM are named XY.
+ #	The rafters will be named BATTEN. 
+  #BATTEN;number;section_y;section_z;MAT=xxx
+    BATTEN;5;80;120;MAT=woodAuvent
+
+#FASCIA;sectionX;sectionY;MAT=xxx
+  FASCIA;25; 200;MAT=woodAuvent
+
+#GUTTER;diameter;MAT=xxx
+  GUTTER;100;MAT=goutiere
+
+#XY after the BATTEN and the fascia
+  CROSSBAR;70;70;X_POST_1;2460-35;1880;X_POST_1;1670+35;1880;0;MAT=woodAuvent #crossbar South door
+
+#CUTTER;x1;y1;z1;x2;y2;z2;x3;y3;z3;x4;y4;z4;direction;Id(panel to be cut)  #4 point + 1 direction, delete part towards direction; object = chamfer, PANELING...
+#CLADDING;x;y;z;width;height_y;direction;orientation;pas;epaisseur;delta_height;Id;MAT=woodAuvent
+  CLADDING;SECTION_POST_X;50;120;2620;2020-120-120;yminus;horizontal;130;20;0;EAST_SOUTH;MAT=lambris #EAST_SOUTH field(id) EAST_SOUTH for the CUTTER
+  CUTTER;120;-20;125;2780;-20;250;2780;80;250;120;80;125;zminus;EAST_SOUTH  #zmoins towards the part to remove
+
+  CLADDING;2900-0;50;Z_POST_2+120;1755-35;2020-Z_POST_2-120-120;yminus;horizontal;130;20;0;EAST;MAT=lambris
+  CUTTER;2900-0;-20;270;4655-35;-20;365;4655-35;40;365;2900-0;40;270;zminus;EAST 
+
+#CLADDING;40;120;120;3288-SECTION_POST_Y;2200;xminus;horizontal;130;20;0;"";MAT=lambris
+  CLADDING;40;120;120;1670-120-35;1880-85;xminus;horizontal;130;20;0;"";MAT=lambris   #Sud Est
+  CLADDING;40;2460+35;120;3288-2460-180+145;1880-85;xminus;horizontal;130;20;0;"";MAT=lambris   #South West
+  CLADDING;40;120;1880+40;3288-180+60;1000;xminus;horizontal;130;20;0;"";MAT=lambris   #Upper southern section
+
+#door
+  PANELING;X_POST_1;1670+35;120;2460-35-(1670+35);1880-120-35;xplus;vertical;130;20;0;PORTE;MAT=lambris   #South door
+  PANELING;X_POST_3-1030-60;0;Z_POST_3+55;1010;1660-105-55;yminus;vertical;112;20;0;CHAPEAU;MAT=lambris   #East door 
+

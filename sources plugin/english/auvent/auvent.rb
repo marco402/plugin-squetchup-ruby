@@ -21,7 +21,7 @@ module Auvent
 
     @materials = {}
     @last_component_name = nil   #stores the name of the generated component /  mémorise le nom du composant généré
-
+    @language = "nil"
     #************************Instances-Definition-Composant************************************
 
     def self.place_instance(definition)
@@ -50,10 +50,17 @@ module Auvent
     def self.last_component_name=(name)
       @last_component_name = name
     end
+    def self.language
+      @language
+    end
 
+    def self.language=(language)
+      @language = language
+    end
     #*********************************Principales fonctions**************************************
 
     def self.generer_ossature_depuis_fichier(path, comp_name)
+      FctAuvent.language = "nil"
       model = Sketchup.active_model
       puts "===generate_framework_from_file / generer_ossature_depuis_fichier(#{path}, #{comp_name}) ==="
       model.start_operation("Génération Auvent", true)
@@ -102,8 +109,8 @@ module Auvent
         piece_direction(root, p)
       when "SOL","GROUND"
         piece_verticale(root, p)
-      when "PENTE"
-        piece_pente(root, p)
+      when "PENTE","SLOPE"      #obsolete
+        piece_pente(root, p)    #remplacé par ANGLE_XZ et ANGLE_YZ
       when "ANGLE_XZ"
         piece_angle_xz(root, p)
       when "ANGLE_YZ"
@@ -122,7 +129,7 @@ module Auvent
         piece_panneau_clins(root, p)
       when "PANNEAU","DESSUS","PANEL","TOP"
         piece_panneau(root, p)
-      when "XY","TRAVERSE","MONTANT","RAIL","UPRIGHT"
+      when "XY","TRAVERSE","MONTANT","RAIL","UPRIGHT","CROSSBAR"
         g=piece_xy(root, p)
       when "RENFORT_45"
         piece_renfort_45(root, p)
@@ -147,7 +154,7 @@ module Auvent
       type = COVER_TYPES[cover_type_key]
       largeur=type[:largeur].inspect
       # --- Débords toit par rapport aux liteaux haut et bas---
-      if(last_component_name=="AUVENT_GARAGE")
+      if(last_component_name=="AUVENT_GARAGE" || last_component_name=="GARAGE_CANOPY")
         debords = {
           gauche: 130.mm,  # gauche (X-)
           droite: 130.mm,  # droite (X+)
@@ -174,7 +181,7 @@ module Auvent
         }
       end
       # --- Sélection des liteaux ---
-      #liteaux = root.entities.grep(Sketchup::Group).select { |g| g.name.to_s.upcase.include?("LITEAU") || g.name.to_s.upcase.include?("BATTEN")}   #classement: Est  Ouest   Milieu
+         #classement: Est  Ouest   Milieu
       mots_cles = ["LITEAU", "BATTEN"]
       liteaux = UtilsAuvent.filtrer_groupes_par_mots_cles(root.entities, mots_cles)
       if liteaux.length < 2
@@ -638,7 +645,7 @@ module Auvent
       def_face   = defs.add("VIEW_FACE_#{entity.entityID}")
       def_gauche = defs.add("VIEW_GAUCHE_#{entity.entityID}")
       def_dessus = defs.add("VIEW_DESSUS_#{entity.entityID}")
-      if(last_component_name=="AUVENT_GARAGE")
+      if(last_component_name=="AUVENT_GARAGE" || last_component_name=="GARAGE_CANOPY")
         def_droite = defs.add("VIEW_DROITE_#{entity.entityID}")
       end
       # Construction du repère local basé sur les chevrons ---
@@ -672,7 +679,7 @@ module Auvent
         pts_face   = coords.map { |cx, cy, cz| Geom::Point3d.new(0,  cx, cz) }
         pts_gauche = coords.map { |cx, cy, cz| Geom::Point3d.new(0,  cy, cz) }
         pts_dessus = coords.map { |cx, cy, cz| Geom::Point3d.new(cx, cy, 0) }
-        if(last_component_name=="AUVENT_GARAGE")
+        if(last_component_name=="AUVENT_GARAGE" || last_component_name=="GARAGE_CANOPY")
           pts_droite_arriere_plan = coords
           .map { |cx, cy, cz| Geom::Point3d.new(cx, cy, cz) }
           .select { |p| p.x > 1.3}   #1.5 1.4 cadre porte   1.3 ok
@@ -685,11 +692,11 @@ module Auvent
         UtilsAuvent.add_face_to_definition(def_face,   pts_face)
         UtilsAuvent.add_face_to_definition(def_gauche, pts_gauche)
         UtilsAuvent.add_face_to_definition(def_dessus, pts_dessus)
-        if(last_component_name=="AUVENT_GARAGE")
+        if(last_component_name=="AUVENT_GARAGE" || last_component_name=="GARAGE_CANOPY")
           UtilsAuvent.add_face_to_definition(def_droite, pts_droite)
         end
       end
-      if(last_component_name=="AUVENT_GARAGE")
+      if(last_component_name=="AUVENT_GARAGE" || last_component_name=="GARAGE_CANOPY")
         return def_face, def_gauche, def_dessus ,def_droite
       else
         return def_face, def_gauche, def_dessus
@@ -798,7 +805,7 @@ module Auvent
       new_face   = plan.entities.add_instance(face, IDENTITY)
       new_gauche = plan.entities.add_instance(gauche, IDENTITY)
       new_dessus = plan.entities.add_instance(dessus, IDENTITY)
-      if(last_component_name=="AUVENT_GARAGE")
+      if(last_component_name=="AUVENT_GARAGE" || last_component_name=="GARAGE_CANOPY")
         new_droite = plan.entities.add_instance(droite, IDENTITY)
       end
       tr_rot_face = Geom::Transformation.rotation(ORIGIN, Z_AXIS, 90.degrees)  #OK en XY
@@ -815,7 +822,7 @@ module Auvent
       new_gauche.transform!(tr_rot_gauche_xy)
       tr_mirror = Geom::Transformation.scaling(ORIGIN, 1, -1, 1)
       new_gauche.transform!(tr_mirror)
-      if(last_component_name=="AUVENT_GARAGE")
+      if(last_component_name=="AUVENT_GARAGE" || last_component_name=="GARAGE_CANOPY")
         new_droite.transform!(tr_rot_gauche_z)
         new_droite.transform!(tr_rot_gauche_xy)
         new_droite.transform!(tr_mirror)
@@ -836,14 +843,14 @@ module Auvent
       x_face =espX-fb.min.x
       x_dessus = x_face
       x_gauche =espX + fw + espX - gb.min.x
-      if(last_component_name=="AUVENT_GARAGE")
+      if(last_component_name=="AUVENT_GARAGE" || last_component_name=="GARAGE_CANOPY")
         x_droite = x_gauche
       end
       espY = (a4_height - cart_height - (fh + dh ).to_f) / 3
       y_dessus = cart_height + espY
       y_face   = y_dessus + dh + espY
       y_gauche = y_face
-      if(last_component_name=="AUVENT_GARAGE")
+      if(last_component_name=="AUVENT_GARAGE" || last_component_name=="GARAGE_CANOPY")
         y_droite = y_face
       end
       #Symbole Terrain Naturel (TN) ---
@@ -892,7 +899,7 @@ module Auvent
           niveau_y - 15.mm / chosen_scale,
           4.mm / chosen_scale
         )
-      elsif(last_component_name=="AUVENT_NORD")
+      elsif(last_component_name=="AUVENT_NORD" || last_component_name=="NORTH_CANOPY")
         # --- Symbole Terrain Naturel (TN) ---
         # Position de la ligne TN
         largeur_face=fw
@@ -920,7 +927,7 @@ module Auvent
           niveau_y +1.mm/chosen_scale,
           4.mm/chosen_scale
         )
-      elsif(last_component_name=="ABRI_VOITURE")
+      elsif(last_component_name=="ABRI_VOITURE" || last_component_name=="CARPORT" )
         # --- Symbole Terrain Naturel (TN) ---
         # Position de la ligne TN
         largeur_face=fw
@@ -947,7 +954,7 @@ module Auvent
           niveau_y + 1.mm/chosen_scale,
           4.mm/chosen_scale
         )
-      elsif(last_component_name=="AUVENT_GARAGE")
+      elsif(last_component_name=="AUVENT_GARAGE" || last_component_name=="GARAGE_CANOPY")
         # Position de la ligne TN
         largeur_face=fw
         niveau_y_1 = y_face
@@ -1008,7 +1015,7 @@ module Auvent
       new_face.transform!(Geom::Transformation.translation([x_face, y_face, 0]))
       new_dessus.transform!(Geom::Transformation.translation([x_face, y_dessus, 0]))
       new_gauche.transform!(Geom::Transformation.translation([x_gauche, y_gauche, 0]))
-      if(last_component_name=="AUVENT_GARAGE")
+      if(last_component_name=="AUVENT_GARAGE" || last_component_name=="GARAGE_CANOPY")
         new_droite.transform!(Geom::Transformation.translation([largeur_face + 2*espX, y_dessus, 0]))
       end
       model = Sketchup.active_model
@@ -1205,7 +1212,7 @@ module Auvent
       orientation: :vertical,normal: :xplus)
       ents  = parent.entities
       clins_group = ents.add_group
-      clins_group.name = "PANNEAU CLINS"
+      clins_group.name = name
       clins_group.layer = parent.layer
       # On pose l'attribut sur le groupe
       clins_group.set_attribute("panneau", "id", id.to_s)
@@ -1256,7 +1263,11 @@ module Auvent
         # Transformation locale → monde
         pts_world = pts_local.map { |p| p.transform(tr_global) }
         lame_group = gents.add_group
-        lame_group.name="LAME"
+        if (FctAuvent.language=="FR")
+          lame_group.name="LAME"
+        else
+          lame_group.name="SLAT"
+        end
         lame_group.layer = parent.layer
         lame_face  = lame_group.entities.add_face(pts_world)
         faces << lame_face if lame_face
@@ -1284,7 +1295,7 @@ module Auvent
           orientation: :vertical, normal: :xplus)
       ents  = parent.entities
       lambris_group = ents.add_group
-      lambris_group.name="PANNEAU LAMBRIS"
+      lambris_group.name=name
       lambris_group.layer = parent.layer
       # On pose l'attribut sur le groupe
       lambris_group.set_attribute("panneau", "id", id.to_s)
@@ -1365,7 +1376,11 @@ module Auvent
         # Transformation locale → monde
         pts_world[i] = pts_local.map { |p| p.transform(tr_global) }
         lame_group = gents.add_group
-        lame_group.name="LAME"
+        if (FctAuvent.language=="FR")
+          lame_group.name="LAME"
+        else
+          lame_group.name="SLAT"
+        end
         lame_group.layer = parent.layer
         lame_face  = lame_group.entities.add_face(pts_world[i])
         faces << lame_face if lame_face
@@ -1490,6 +1505,11 @@ module Auvent
       # 1) Créer un groupe pour la couverture
       gents=root.entities
       g = root.entities.add_group
+      if (FctAuvent.language=="FR")
+        g.name = "COUVERTURE"
+      else
+        g.name = "COVERING"
+      end
       g.name = "COUVERTURE"
       g.layer = root.layer
       # 2) Récupérer les entities du groupe
@@ -1699,12 +1719,20 @@ module Auvent
       id=p[10]
       name=p[0]
       g = root.entities.add_group
-      if(last_component_name=="AUVENT_GARAGE" && x1 == x2 && p[0] !="TRAVERSE")
-        g.name="CHEVRON"                            #les chevrons sont dans la longueur
-      elsif(last_component_name=="AUVENT_GARAGE" && y1 == y2 )
-        g.name="POUTRE"
+      if((last_component_name=="AUVENT_GARAGE" || last_component_name=="GARAGE_CANOPY") && x1 == x2 && p[0] !="TRAVERSE"&& p[0] !="CROSSBAR")
+        if(id.to_s=="1,0mm")       #les chevrons sont dans la longueur
+          g.name="RAFTER"
+        else
+          g.name="CHEVRON"
+        end
+      elsif((last_component_name=="AUVENT_GARAGE" || last_component_name=="GARAGE_CANOPY") && y1 == y2 )
+        if(id.to_s=="1,0mm")       #les chevrons sont dans la longueur
+          g.name="BATTEN"
+        else
+          g.name="LITEAU"
+        end
       else
-        g.name="[#{name}] #{id}"
+        g.name = name    #"[#{name}] #{id}"
         g.set_attribute(name, "id", id.to_s)
       end
       g.layer = root.layer
@@ -1819,8 +1847,14 @@ module Auvent
         p[2].to_f,
         p[3].to_f
       )
-      add_panneau_clins_3d(       #add_panneau_3d(
-        "PANNEAU CLINS",
+      name=p[0]
+      if (FctAuvent.language=="FR")
+        name="PANNEAU " + name
+      else
+        name="WOOD "+ name
+      end
+      add_panneau_clins_3d(
+        name,
         root,
         origin,
         p[4],     # largeur_totale
@@ -2021,9 +2055,15 @@ module Auvent
         p[2].to_f,
         p[3].to_f
       )
+      name=p[0]
+      if (FctAuvent.language=="FR")
+        name="PANNEAU " + name
+      else
+        name="WOOD "+ name
+      end
       espace=0.001.mm
       lambris_group,pts_profil_lambris_world = add_panneau_lambris_3d(
-        "PANNEAU LAMBRIS",
+        name,
         root,
         origin,
         largeur,     # largeur_totale
@@ -2039,11 +2079,11 @@ module Auvent
         normal: normal_sym
       )
       epaisseur_lames=p[9]
-      if(last_component_name=="AUVENT_GARAGE" && id_sym == :porte && lambris_group != nil)  #
+      if((last_component_name=="AUVENT_GARAGE" || last_component_name=="GARAGE_CANOPY") && id_sym == :porte && lambris_group != nil)  #
         entrouve_porte = Geom::Transformation.rotation(origin, Z_AXIS,  30.degrees)
         lambris_group.transform!(entrouve_porte)
       end
-      if((last_component_name=="AUVENT_GARAGE" || last_component_name=="TEST_PORTE"  || last_component_name=="TEST_DOOR") && id_sym == :chapeau && lambris_group != nil)  #
+      if((last_component_name=="AUVENT_GARAGE"  || last_component_name=="GARAGE_CANOPY" || last_component_name=="TEST_PORTE"  || last_component_name=="TEST_DOOR") && id_sym == :chapeau && lambris_group != nil)  #
         lames = lambris_group.entities.grep(Sketchup::Group)
         nb_lame=lames.length
         hauteur_chapeau=133.mm
@@ -2360,7 +2400,7 @@ module Auvent
         z = new_center.z - radius_int * Math.sin(angle)
         pts_int << Geom::Point3d.new(new_center.x, y, z)  #-30.mm
       end
-      if(last_component_name=="AUVENT_GARAGE")
+      if(last_component_name=="AUVENT_GARAGE" || last_component_name=="GARAGE_CANOPY")
         delete_rive(ents)        #La goutière est fixée sur le fibrociment.
       end
       longueur = edges_sorted[0].length
@@ -2481,16 +2521,9 @@ module Auvent
         Geom::Vector3d.new(0,0,1),
         90.degrees
       )
-      if(last_component_name=="AUVENT_GARAGE")
-        longueur += 2 * (280.mm+150.mm)-80.mm      #debord chevrons(liteaux dans ce cas)+debord couverture
-        tr_offset = Geom::Transformation.translation(
-          Geom::Vector3d.new(-280.mm-80.mm-150.mm, -sxy, sz + haut_liteau )
-        )
-      else
-        tr_offset = Geom::Transformation.translation(
-          Geom::Vector3d.new(longueur_rive, -sxy, -10.mm )    #-10.mm pour ne pas dépasser du liteau avec la pente
-        )
-      end
+      tr_offset = Geom::Transformation.translation(
+        Geom::Vector3d.new(longueur_rive, -sxy, -10.mm )    #-10.mm pour ne pas dépasser du liteau avec la pente
+      )
       # Appliquer transformation aux profil
       pts = pts.map { |p| p.transform(tr_rot).transform(tr_offset) }
       # Créer la face dans le bon repère
@@ -2548,7 +2581,7 @@ module Auvent
         edge_D = UtilsAuvent.edge_with_highest_z(edges_D)  #chevron droit il faut edge zmax
         positions_y = []
         positions_z = []
-        if(last_component_name=="AUVENT_GARAGE")
+        if(last_component_name=="AUVENT_GARAGE" || last_component_name=="GARAGE_CANOPY")
           depassement = 280.mm   #des 2 cotés
         end
         point_min = [edge_D.start.position, edge_D.end.position].min_by { |p| p.z }    #point bas pour calcul positions_y en y croissant
@@ -2602,7 +2635,7 @@ module Auvent
         Geom::Point3d.new( size,  size, 0),
         Geom::Point3d.new(-size,  size, 0)
       ]
-      if(last_component_name=="AUVENT_GARAGE")  #cas particulier:les chevrons sont en réalité des liteaux pour poser le toit dessus
+      if(last_component_name=="AUVENT_GARAGE" || last_component_name=="GARAGE_CANOPY")  #cas particulier:les chevrons sont en réalité des liteaux pour poser le toit dessus
         tr_rotX = Geom::Transformation.rotation(ORIGIN, X_AXIS, -90.degrees)
         tr_offset_local = Geom::Transformation.translation([0, 0, 200.mm])
         # Points dans l’espace global du chevron
@@ -2946,6 +2979,14 @@ module Auvent
         end
         # Type de pièce
         type = parts[0]
+        if(FctAuvent.language=="nil")
+          if ["POTEAU", "POUTRE","SOL","PENTE","CHEVRON","LITEAU","RIVES","GOUTIERE",
+            "LAMBRIS","CLINS","PANNEAU","DESSUS""TRAVERSE","MONTANT"].include?(type)
+            FctAuvent.language="FR"
+          else
+            FctAuvent.language="EN"
+          end
+        end
         puts "DEBUG type = #{type.inspect}"
         raw_values = parts[1..-1].map { |p| UtilsAuvent.eval_expr(p, vars) }
         values = raw_values.map do |v|
@@ -3308,9 +3349,7 @@ module Auvent
           )
           face = lambris_group.entities.add_face(projected_profile)
           lames = lambris_group.entities.grep(Sketchup::Group)
-          lames.each do |lame|
-            reappliquer_materiau(lame,mat)
-          end
+          reappliquer_materiau(lambris_group,mat)  #ici sinon pas de matériel sur la coupe du dessus
         end   #lamelles
       end   #lames
     end  
@@ -3439,10 +3478,24 @@ module Auvent
     #*********************************Inventaire matériel**************************************
 
     def self.generate_liste_matériel(gents)
-      liste = []
-      liste = scan_entities(gents,liste)        #gents=auvent_def.entities
-      liste.each do |p|
-        puts("#{p}")
+      Sketchup.send_action("showRubyPanel:")
+      UI.start_timer(0.2, false) do
+        if (FctAuvent.language=="FR")
+          puts "Dimensions en cm."
+          cle_lo="longueur"
+          cle_la="largeur"
+          cle_ep="épaisseur"
+        else
+          puts "Dimensions in cm."
+          cle_lo="length"
+          cle_la="width"
+          cle_ep="thickness"
+        end
+        liste = []
+        liste = scan_entities(gents,liste,cle_lo,cle_la,cle_ep) 
+        liste.each do |p|
+          puts("#{p}")
+        end
       end
     end
 
@@ -3465,15 +3518,16 @@ module Auvent
       nil
     end
 
-    def self.scan_entities(entities, liste)
+    def self.scan_entities(entities, liste,cle_lo,cle_la,cle_ep)
       entities.each do |child|
         # On ne descend que dans Group ou ComponentInstance
         if child.is_a?(Sketchup::Group) || child.is_a?(Sketchup::ComponentInstance)
           nom = child.name.to_s.strip.upcase
-          if ["CHEVRON", "POUTRE","LITEAU", "PANNE", "POTEAU", "XY","CLIN","PANNEAU","LAME","LAMBRIS",
-            "CUTTER","PANNEAU CLINS","PANNEAU LAMBRIS","RIVE","GOUTIERE","SOL",
-            "ANGLE_XZ","ANGLE_YZ","COUVERTURE","MONTANT","TRAVERSE","DESSUS","POST","BEAM",
-            "BATTEN","GUTTER","CLADDING","PANELING","GROUND","PANEL","TOP","RAIL","UPRIGHT","RAFTER"].include?(nom)
+          if [ "POTEAU","POST", "POUTRE","BEAM","SOL","GROUND","PENTE" ,"SLOPE","ANGLE_XZ","ANGLE_YZ",               #10
+          "CHEVRON","RAFTER","LITEAU","BATTEN","RIVES","FASCIA","GOUTIERE","GUTTER","LAMBRIS","PANELING",            #10
+          "CLINS","CLADDING","PANNEAU","PANEL","DESSUS","TOP","XY","TRAVERSE","RAIL","CROSSBAR",                     #10
+          "MONTANT","UPRIGHT","RENFORT_45","CUTTER",                                                                 # 4
+          "PANNEAU CLINS","WOOD CLADDING","PANNEAU LAMBRIS","WOOD PANELING","LAME","SLAT","COUVERTURE","COVERING"].include?(nom)     #8 transformed types 
             bb = child.bounds
             dims = [
               (bb.max.x - bb.min.x).abs.to_cm,
@@ -3482,17 +3536,17 @@ module Auvent
             ].sort
             liste << {
               type: nom,
-              longueur: dims[2].round(1),
-              largeur:  dims[1].round(1),
-              épaisseur:  dims[0].round(1)   #,
+              cle_lo => dims[2].round(1),
+              cle_la => dims[1].round(1),
+              cle_ep => dims[0].round(1)   #,
               #guid: child.persistent_id
             }
           end
           # DESCENTE RÉCURSIVE SÉCURISÉE
           if child.is_a?(Sketchup::ComponentInstance)
-            scan_entities(child.definition.entities, liste)
+            scan_entities(child.definition.entities, liste,cle_lo,cle_la,cle_ep)
           elsif child.is_a?(Sketchup::Group)
-            scan_entities(child.entities, liste)
+            scan_entities(child.entities, liste,cle_lo,cle_la,cle_ep)
           end
         end # if Group/ComponentInstance
       end # each

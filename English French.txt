@@ -1,0 +1,30 @@
+    
+total:                                 34 + 8 transformed types
+types:                       16
+traduit / translated:        14        28
+identiques / identical:       4         4
+            +"XY" + "RAIL"              2
+
+types traités par dispatch_type_piece / types handled by  dispatch_type_piece
+      "POTEAU","POST"
+      "POUTRE","BEAM"
+      "SOL","GROUND"
+      "PENTE","SLOPE"       obsolete use ANGLE_XZ or ANGLE_YZ
+      "ANGLE_XZ"
+      "ANGLE_YZ"
+      "CHEVRON","RAFTER"
+      "LITEAU","BATTEN"
+      "RIVES","FASCIA"
+      "GOUTIERE","GUTTER"
+      "LAMBRIS","PANELING"
+      "CLINS","CLADDING"
+      "PANNEAU","PANEL","DESSUS","TOP"
+      "XY","TRAVERSE","RAIL","CROSSBAR","MONTANT","UPRIGHT"
+      "RENFORT_45"
+      "CUTTER"
+ 
+types transformés / transformed types
+      "PANNEAU CLINS","WOOD CLADDING"
+      "PANNEAU LAMBRIS","WOOD PANELING"
+      "LAME","SLAT"
+      "COUVERTURE","COVERING"
